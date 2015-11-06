@@ -1,9 +1,9 @@
 #Määrittelydokumentti#
 
 ##ohjelman tarkoitus##
-Tarkoitus toteuttaa ohjelma joka suorittaa syntaksitarkastuksen jollekkin ohjelmointikielelle. Ohjaajan kanssa 
-puhuttiin että C kielelle, mutta ainakin alkuun tavoite on toteuttaa syntaksitarkastus vähän pienemmälle 
-kielelle, esim jollekkin C kielen osajoukolle ja kasvattaa sitä mahdollisesti suuremmaksi mikäli aikaa jää. 
+Tarkoitus toteuttaa ohjelma joka suorittaa syntaksitarkastuksen eräälle c-kielen osajoukolle. Tämän kielen
+määritelmä löytyy tiedostosta "kielen_kuvaus.md". Jos aikaa jää kurssin lopussa, saatetaan kielen kuvausta
+hieman laajentaa.
 
 Syntaksin tarkastus muodostuu kahdesta osasta: Leksikaalisesta ja syntaktisesta analyysistä. Leksikaalinen 
 analyysi toteutetaan säännöllisten lausekkeiden avulla jakamalla syöte pienempiin ohjelmointikielen 
@@ -18,6 +18,7 @@ analyysin tulos) ja syntaksipuu ovat kokonaisuudessaan kerralla muistissa.
 
 Lopullinen ohjelma siis saa syötteekseen jonkin kooditiedoston. Tulosteena ohjelma kertoo hyväksyttiinkö 
 kyseinen koodi eli oliko syntaksin mukainen. Jos oli, tulostetaan mahdollisesti vielä syntaksipuu näytölle.
+Jos aikaa jää saatetaan käännös suorittaa ttk-15 arkkitehtuurille.
 
 
 
