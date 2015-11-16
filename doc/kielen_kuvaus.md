@@ -8,16 +8,26 @@ En ota heti alkuun tavoitteeksi koko ansi c kielen tarkastusta vaan olen pääty
  * if lause
  * c:n kommentit. sekä yhden rivin että usean rivin muodossa.
 
+
 #leksikaalinen analyysi#
-leksikaalinen analyysi tuottaa 5 laisia tokeneita:
- * operaattorit: (, ), +, -, *, /, =, {, }, ==, !=, >, <, >=, <=
- * varatut sanat: "int", "float", "while" "for", "if"
+leksikaalinen analyysi tuottaa seuraavan laisia tokeneita:
+ * lBra operaattori (
+ * rBra operaattori )
+ * assOp operaattori = 
+ * compOp operaattorit: ==, !=, >, <, >=, <=
+ * addOp operaattorit: +, -
+ * mulOp operaattorit: *, /
+ * iwKey varatut sanat if ja while
+ * forkey varattu sana for
+ * typeKey varatut sanat int, float
  * muuttujat: [a-z][a-z,0-9,_-]*
  * literaaleja: kokonaisluvut [0-9]* ja liukuluvut [0-9]*.[0-9]*
  * virhetokeneita: kaikki merkkijonot mitkä eivät ole yllä mainittuja tokeneita
    tuottavat virhetokenin.
 
 #skannaaminen#
+HUOM! tämä osuus ei ole enää voimassa, sillä kielioppia on päivitetty!
+
 tokenit saadaan palautettua hyvin yksinkertaisesti seuraavalla algoritmilla:
 lue merkki
 jos merkki on
@@ -45,3 +55,33 @@ jos merkki on
    * lue seuraava merkki
    * jos merkki on = niin palauta == vertailutoken, muuten = sijoitustoken
 
+##kieli##
+Kyseessä on selvästi yhteydetön eli kontekstiton kieli. (CFL) Formaalisti CFL on
+nelikko (T, N, S, P), jossa T on terminaalien joukko, N on epäterminaalien joukko, S
+on aloitussymboli ja P on sääntöjoukko, joka määrää mitä mistäkin epäterminaalista
+on johdettavissa.
+
+Oletetaan, että lukija ymmärtää säännöllisten kielten merkintätavat.
+
+###T###
+Koska parseri ei näe merkkejä vaan pelkkiä tokeneita, on terminaalien joukko sama
+kuin leksikaalisen analyysin tuottamien tokenien joukko
+
+###S###
+keilen alkusymboli on program
+
+###N ja P###
+Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
+ * program         = statement_list | EOF
+ * statement_list  = stetement statement_list | epsilon
+ * statement       = if | while | for | declaration | assignment
+ * expression      = term term_tail
+ * term_tail       = addOp term term_tail | epsilon
+ * term            = factor factor_tail
+ * factor_tail     = mulOp factor factor_tail | epsilon
+ * factor          = ( expression ) | identifier | literal
+ * if              = if ( expression ) statement
+ * while           = while ( expression ) statement
+ * for             = for (statement ; expression ; statement) statement
+ * declaration     = type id = expression
+ * assignment      = id = expression

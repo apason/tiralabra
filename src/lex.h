@@ -5,11 +5,18 @@
 
 #define TOKEN_MAX_LENGTH 32
 
-#define TOKEN_OPERATOR   0
-#define TOKEN_KEY_WORD   1
-#define TOKEN_IDENTIFIER 2
-#define TOKEN_LITERAL    3
-#define TOKEN_ERROR      4
+#define TOKEN_ASSOP      0
+#define TOKEN_IDENTIFIER 1
+#define TOKEN_LITERAL    2
+#define TOKEN_TYPEKEY    3
+#define TOKEN_IWKEY      4
+#define TOKEN_FORKEY     5
+#define TOKEN_COMPOP     6
+#define TOKEN_MULOP      7
+#define TOKEN_LBRA       8
+#define TOKEN_RBRA       9
+#define TOKEN_ADDOP      11
+#define TOKEN_ERROR      12
 
 #define ungetc(x) 	 fseek(x, -sizeof(char), SEEK_CUR)
 #define skipch(x)        fseek(x,  sizeof(char), SEEK_CUR)

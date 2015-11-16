@@ -5,7 +5,9 @@
 
 #include "lex.h"
 
-static int isKeyWord(char *word);
+static int isTypeKey(char *word);
+static int isIwKey(char *word);
+static int isForKey(char *word);
 static token *newToken(token_type type, char *value);
 static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input);
 static token_list *newTokenList(void);
@@ -43,13 +45,28 @@ token_list *lex(FILE *input){
 	switch (c){
 	    
 	    /*
-	     * this is the only group of items that can be returned
-	     * directly after founding. there is no need to read next
+	     * this and next 3 groups are the only groups of items that can
+	     * be returned directly after founding. there is no need to read next
 	     * characters and thus no need to ungetc it.
 	     */
-	case '+': case '-': case '*':
+	case '+': case '-': 
 	    buffer[0] = c;
-	    tl = addToken(tl, TOKEN_OPERATOR, buffer, input);
+	    tl = addToken(tl, TOKEN_ADDOP, buffer, input);
+	    break;
+
+	case '*':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_MULOP, buffer, input);
+	    break;
+
+	case '(':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_LBRA, buffer, input);
+	    break;
+
+	case ')':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_RBRA, buffer, input);
 	    break;
 
 	    /*
@@ -59,30 +76,37 @@ token_list *lex(FILE *input){
 	     */
 	case '/':
 	    buffer[0] = c;
+	    /*
+	     * if this if clause is true, there is surely an error
+	     * because mulOp can not be the last token of source.
+	     * anyway let parser handle it :)
+	     */
 	    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
 		skipch(input);
-		tl = addToken(tl, TOKEN_OPERATOR, buffer, input);
+		tl = addToken(tl, TOKEN_MULOP, buffer, input);
 	    }
 	    else if(c == '/')
 		while((c = fgetc(input)) != '\n' && c != EOF);
 	    else if(c == '*'){
 		while((c = fgetc(input))){
 		    if(c == EOF){
-			skipch(input);
 			tl = addToken(tl, TOKEN_ERROR, buffer, input);
 			break;
 		    }
 		    else if( c != '*')
 			continue;
-		    else if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+		    else if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
 			tl = addToken(tl, TOKEN_ERROR, buffer, input);
+			break;
+		    }
 		    else if(c == '/') break;
+		    //is here problem?
 		    else
 			ungetc(input);
 		}
 	    }
 	    else
-		tl = addToken(tl, TOKEN_OPERATOR, buffer, input);
+		tl = addToken(tl, TOKEN_MULOP, buffer, input);
 
 	    break;
 
@@ -92,15 +116,21 @@ token_list *lex(FILE *input){
 	     * == <= >= operators. so after returning operator from this
 	     * casee, the ungetch() macro should be called
 	     */
-	case '=': case '>': case '<':
+	case '>': case '<': case '=':
 	    buffer[0] = c;
 	    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
 		skipch(input);
 	    else if(c == '=')
 		buffer[1] = c;
 
-	    tl = addToken(tl, TOKEN_OPERATOR, buffer, input);
-
+	    if(strncmp(buffer, "=", TOKEN_MAX_LENGTH) == 0)
+		tl = addToken(tl, TOKEN_ASSOP, buffer, input);
+	    else{
+		tl = addToken(tl, TOKEN_COMPOP, buffer, input);
+		
+		if(strlen(buffer) > 1)
+		    skipch(input);
+	    }
 	    break;
 
 	    /* here we skip all whitespaces */
@@ -124,8 +154,12 @@ token_list *lex(FILE *input){
 			break;
 		}
 
-		if(isKeyWord(buffer))
-		    tl = addToken(tl, TOKEN_KEY_WORD, buffer, input);
+		if(isTypeKey(buffer))
+		    tl = addToken(tl, TOKEN_TYPEKEY, buffer, input);
+		else if(isIwKey(buffer))
+			tl = addToken(tl, TOKEN_IWKEY, buffer, input);
+		else if(isForKey(buffer))
+			tl = addToken(tl, TOKEN_FORKEY, buffer, input);
 		else
 		    tl = addToken(tl, TOKEN_IDENTIFIER, buffer, input);
 
@@ -158,9 +192,23 @@ token_list *lex(FILE *input){
 	    breakpoint:
 		tl = addToken(tl, TOKEN_LITERAL, buffer, input);
 	    }
-	    //error tokens here! not implemented yet!
-	    else
-		;
+	    /*
+	     * error tokens here! lets scan to next whitespace and
+	     * treat the whole word as an error token
+	     */
+	    else{
+		for(i = 0; i < TOKEN_MAX_LENGTH; i++){
+		    buffer[i] = c;
+		    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
+			tl = addToken(tl, TOKEN_ERROR, buffer, input);
+			break;
+		    }
+		    if(c == ' ' || c == '\n' || c == '\t'){
+			tl = addToken(tl, TOKEN_ERROR, buffer, input);
+			break;
+		    }
+		}
+	    }
 	    break;
 	}
     }
@@ -181,13 +229,13 @@ static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE 
     tl->next = NULL;
     tl->value = NULL;
 
-    if(type == TOKEN_OPERATOR){
-	if(strncmp(buffer, "=", TOKEN_MAX_LENGTH) == 0 ||
-	   strncmp(buffer, "<", TOKEN_MAX_LENGTH) == 0 ||
-	   strncmp(buffer, "/", TOKEN_MAX_LENGTH) == 0 ||
-	   strncmp(buffer, ">", TOKEN_MAX_LENGTH) == 0)
-	    ungetc(input);
-    }
+    if(type == TOKEN_ERROR                         ||
+       strncmp(buffer, "+", TOKEN_MAX_LENGTH) == 0 ||
+       strncmp(buffer, "-", TOKEN_MAX_LENGTH) == 0 ||
+       strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0 ||
+       strncmp(buffer, "(", TOKEN_MAX_LENGTH) == 0 || 
+       strncmp(buffer, ")", TOKEN_MAX_LENGTH) == 0)
+	;
     else
 	ungetc(input);
     
@@ -206,16 +254,28 @@ static token *newToken(token_type type, char *value){
     return t;
 }
 
-static int isKeyWord(char *word){
+static int isIwKey(char *word){
+    if(strncmp(word, "if", TOKEN_MAX_LENGTH)    == 0 ||
+       strncmp(word, "while", TOKEN_MAX_LENGTH) == 0 )
+	return 1;
+    
+    return 0;
+}     
+static int isTypeKey(char *word){
     if(strncmp(word, "int", TOKEN_MAX_LENGTH)   == 0 ||
-       strncmp(word, "float", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(word, "if", TOKEN_MAX_LENGTH)    == 0 ||
-       strncmp(word, "while", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(word, "for", TOKEN_MAX_LENGTH)   == 0 )
+       strncmp(word, "float", TOKEN_MAX_LENGTH) == 0 )
 	return 1;
     
     return 0;
 }
+static int isForKey(char *word){
+    if(strncmp(word, "for", TOKEN_MAX_LENGTH)    == 0 )
+	return 1;
+
+    return 0;
+}
+
+
 /*
  * this function is mainly for debugging. it takes token_list *
  * parameter and prints its all nodes.
