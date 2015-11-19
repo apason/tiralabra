@@ -20,6 +20,7 @@
 #define TOKEN_SCOL       13
 #define TOKEN_EOF        14
 
+// these function calls are so frequently used that I made them a macros
 #define ungetc(x) 	 fseek(x, -sizeof(char), SEEK_CUR)
 #define skipch(x)        fseek(x,  sizeof(char), SEEK_CUR)
 
