@@ -17,6 +17,8 @@
 #define TOKEN_RBRA       9
 #define TOKEN_ADDOP      11
 #define TOKEN_ERROR      12
+#define TOKEN_SCOL       13
+#define TOKEN_EOF        14
 
 #define ungetc(x) 	 fseek(x, -sizeof(char), SEEK_CUR)
 #define skipch(x)        fseek(x,  sizeof(char), SEEK_CUR)

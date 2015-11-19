@@ -1,6 +1,6 @@
 CC=	gcc
 STD=	_GNU_SOURCE_
-OBJS=	main.o lex.o
+OBJS=	main.o lex.o parser.o
 CFLAGS=	-Wall -D$(STD) -c -Werror
 TARGET= ../target/
 

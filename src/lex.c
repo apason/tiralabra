@@ -11,7 +11,7 @@ static int isForKey(char *word);
 static token *newToken(token_type type, char *value);
 static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input);
 static token_list *newTokenList(void);
-static void delLast(token_list *tl);
+static void addEOF(token_list *tl);
 
 /*
  * this is the main function of lexical analyzer. it is called
@@ -133,10 +133,31 @@ token_list *lex(FILE *input){
 	    }
 	    break;
 
+	case '!':
+	    buffer[0] = c;
+	    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+		tl = addToken(tl, TOKEN_ERROR, buffer, input);
+	    if(c == '='){
+		buffer[1] = c;
+		tl = addToken(tl, TOKEN_COMPOP, buffer, input);
+		skipch(input);
+	    }
+	    else{
+		tl = addToken(tl, TOKEN_ERROR, buffer, input);
+		ungetc(input);
+	    }
+	    break;
+	    
 	    /* here we skip all whitespaces */
 	case ' ': case '\n': case '\t':
 	    break;
 
+	    /* end of statement */
+	case ';':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_SCOL, buffer, input);
+	    break;
+	    
 	    /* now the token is keyword, literal, variable or error token */
 	default:
 	    //next token is now key word or identifier
@@ -214,10 +235,10 @@ token_list *lex(FILE *input){
     }
     
     /*
-     * we had all along one extra slot for new tokens
-     * and it is now completely redundant
+     * we had all along one extra slot for new tokens.
+     * now we can mark it as EOF
      */
-    delLast(head);
+    addEOF(head);
     
     return head;
 }
@@ -234,7 +255,8 @@ static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE 
        strncmp(buffer, "-", TOKEN_MAX_LENGTH) == 0 ||
        strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0 ||
        strncmp(buffer, "(", TOKEN_MAX_LENGTH) == 0 || 
-       strncmp(buffer, ")", TOKEN_MAX_LENGTH) == 0)
+       strncmp(buffer, ")", TOKEN_MAX_LENGTH) == 0 ||
+       strncmp(buffer, ";", TOKEN_MAX_LENGTH) == 0)
 	;
     else
 	ungetc(input);
@@ -299,11 +321,8 @@ static token_list *newTokenList(void){
     return tl;
 }
 
-static void delLast(token_list *tl){
-    token_list *prev;
+static void addEOF(token_list *tl){
+    for(; tl->next; tl=tl->next);
 
-    for(; tl->next; prev = tl, tl=tl->next);
-
-    free(prev->next);
-    prev->next = NULL;
+    tl->value = newToken(TOKEN_EOF, "EOF");
 }

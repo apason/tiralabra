@@ -11,19 +11,20 @@
 
 cd "$(dirname "$0")"
 
-bin="../target/lex_test"
+bin="../../target/tira"
 
 red='\033[0;31m'
 green='\033[0;32m'
 NC='\033[0m'
 
 echo " "
-echo "TESTING LEXICAL ANALYZER:"
+echo "TESTING PARSER:"
 
 for test in $(cat test.cfg | cut -f1 -d' '); do
     
-    expected=$(cat test.cfg | grep $test | rev | cut -f1 -d' ' | rev)14;
-    actual=$($bin units/$test | cut -f2 | sed ':a;N;$!ba;s/\n//g');
+    expected=$(cat test.cfg | grep $test | rev | cut -f1 -d' ' | rev);
+    $bin units/$test >> /dev/null ;
+    actual=$?;
 
     if [ "$actual" != "$expected" ] ; then
 	echo -e test $test ${red} FAILED! ${NC} Expected $expected but was $actual;
