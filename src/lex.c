@@ -6,7 +6,8 @@
 #include "lex.h"
 
 static int isTypeKey(char *word);
-static int isIwKey(char *word);
+static int isIfKey(char *word);
+static int isWhileKey(char *word);
 static int isForKey(char *word);
 static token *newToken(token_type type, char *value);
 static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input);
@@ -177,10 +178,12 @@ token_list *lex(FILE *input){
 
 		if(isTypeKey(buffer))
 		    tl = addToken(tl, TOKEN_TYPEKEY, buffer, input);
-		else if(isIwKey(buffer))
-			tl = addToken(tl, TOKEN_IWKEY, buffer, input);
+		else if(isIfKey(buffer))
+		    tl = addToken(tl, TOKEN_IFKEY, buffer, input);
+		else if(isWhileKey(buffer))
+		    tl = addToken(tl, TOKEN_WHILEKEY, buffer, input);
 		else if(isForKey(buffer))
-			tl = addToken(tl, TOKEN_FORKEY, buffer, input);
+		    tl = addToken(tl, TOKEN_FORKEY, buffer, input);
 		else
 		    tl = addToken(tl, TOKEN_IDENTIFIER, buffer, input);
 
@@ -276,9 +279,8 @@ static token *newToken(token_type type, char *value){
     return t;
 }
 
-static int isIwKey(char *word){
-    if(strncmp(word, "if", TOKEN_MAX_LENGTH)    == 0 ||
-       strncmp(word, "while", TOKEN_MAX_LENGTH) == 0 )
+static int isIfKey(char *word){
+    if(strncmp(word, "if", TOKEN_MAX_LENGTH)    == 0)
 	return 1;
     
     return 0;
@@ -291,12 +293,17 @@ static int isTypeKey(char *word){
     return 0;
 }
 static int isForKey(char *word){
-    if(strncmp(word, "for", TOKEN_MAX_LENGTH)    == 0 )
+    if(strncmp(word, "for", TOKEN_MAX_LENGTH)   == 0 )
 	return 1;
 
     return 0;
 }
+static int isWhileKey(char *word){
+    if(strncmp(word, "while", TOKEN_MAX_LENGTH)  == 0 )
+	return 1;
 
+    return 0;
+}
 
 /*
  * this function is mainly for debugging. it takes token_list *

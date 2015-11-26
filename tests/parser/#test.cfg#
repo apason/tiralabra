@@ -1,0 +1,6 @@
+incorrect_assignment.c 0
+correct_assignment.c 1
+incorrect_declaration.c 0
+correct_if.c 1
+incorrect_if_1.c 0
+incorrect_if_2.c 0

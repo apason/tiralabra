@@ -17,7 +17,8 @@ leksikaalinen analyysi tuottaa seuraavan laisia tokeneita:
  * compOp operaattorit: ==, !=, >, <, >=, <=
  * addOp operaattorit: +, -
  * mulOp operaattorit: *, /
- * iwKey varatut sanat if ja while
+ * whileKey varattu sana while
+ * ifKey varattu sana if
  * forkey varattu sana for
  * typeKey varatut sanat int, float
  * muuttujat: [a-z][a-z,0-9,_-]*
@@ -51,8 +52,9 @@ Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
  * term            = factor factor_tail
  * factor_tail     = mulOp factor factor_tail | epsilon
  * factor          = ( expression ) | identifier | literal
- * if              = if ( expression compop expression ) statement
- * while           = while ( expression compop expression ) statement
- * for             = for (assignment expression compop expression ; id = expression) statement
+ * if              = if ( comparation ) statement
+ * while           = while ( comparation ) statement
+ * for             = for (assignment comparation ; id = expression) statement
+ * comparation     = expression compop expression
  * declaration     = type id ; 
  * assignment      = id = expression ; | ;

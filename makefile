@@ -11,7 +11,8 @@ project:
 
 clean:
 	$(MAKE) -C $(SRC) clean
+	$(MAKE) -C $(TESTS) clean
 
 clobber:
 	$(MAKE) -C $(SRC) clobber
-
+	$(MAKE) -C (TESTS) clobber

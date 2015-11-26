@@ -9,7 +9,7 @@
 #define TOKEN_IDENTIFIER 1
 #define TOKEN_LITERAL    2
 #define TOKEN_TYPEKEY    3
-#define TOKEN_IWKEY      4
+#define TOKEN_IFKEY      4
 #define TOKEN_FORKEY     5
 #define TOKEN_COMPOP     6
 #define TOKEN_MULOP      7
@@ -19,6 +19,7 @@
 #define TOKEN_ERROR      12
 #define TOKEN_SCOL       13
 #define TOKEN_EOF        14
+#define TOKEN_WHILEKEY   15
 
 // these function calls are so frequently used that I made them a macros
 #define ungetc(x) 	 fseek(x, -sizeof(char), SEEK_CUR)
