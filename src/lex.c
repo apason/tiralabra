@@ -5,14 +5,23 @@
 
 #include "lex.h"
 
-static int isTypeKey(char *word);
-static int isIfKey(char *word);
-static int isWhileKey(char *word);
-static int isForKey(char *word);
-static token *newToken(token_type type, char *value);
-static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input);
-static token_list *newTokenList(void);
-static void addEOF(token_list *tl);
+static token_list *handleOthers  (token_list *tl, char *buffer, FILE *input);
+static token_list *handleLiterals(token_list *tl, char *buffer, FILE *input);
+static token_list *handleComps   (token_list *tl, char *buffer, FILE *input);
+static token_list *handleSlash   (token_list *tl, char *buffer, FILE *input);
+static token_list *handleErrors  (token_list *tl, char *buffer, FILE *input);
+static token_list *handleNO      (token_list *tl, char *buffer, FILE *input);
+    
+static token_list *addToken      (token_list *tl, token_type type, char *buffer, FILE *input);
+static token      *newToken      (token_type type, char *value);
+
+static int        isTypeKey      (char *word);
+static int        isIfKey        (char *word);
+static int        isWhileKey     (char *word);
+static int        isForKey       (char *word);
+
+static void        addEOF        (token_list *tl);
+static token_list *newTokenList  (void);
 
 /*
  * this is the main function of lexical analyzer. it is called
@@ -28,9 +37,8 @@ static void addEOF(token_list *tl);
  * any token type, the sequence is returned with type TOKEN_ERROR
  */
 token_list *lex(FILE *input){
-    int i;
-    char c, buffer[TOKEN_MAX_LENGTH +1] = {'\0'};
-    token_list *head, *tl = newTokenList();
+    token_list *tmp, *head, *tl = newTokenList();
+    char c, buffer[TOKEN_MAX_LENGTH +1];
 
     head = tl;
 
@@ -46,10 +54,12 @@ token_list *lex(FILE *input){
 	switch (c){
 	    
 	    /*
-	     * this and next 3 groups are the only groups of items that can
+	     * this and next 4 groups are the only groups of items that can
 	     * be returned directly after founding. there is no need to read next
 	     * characters and thus no need to ungetc it.
 	     */
+
+	    //some kind of map system would be useful here?
 	case '+': case '-': 
 	    buffer[0] = c;
 	    tl = addToken(tl, TOKEN_ADDOP, buffer, input);
@@ -70,169 +80,63 @@ token_list *lex(FILE *input){
 	    tl = addToken(tl, TOKEN_RBRA, buffer, input);
 	    break;
 
+	case ';':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_SCOL, buffer, input);
+	    break;
+
+
 	    /*
-	     * here we have three possibilities. the token may be a
-	     * division operator '/' or it can be a start of comment of
-	     * each type //one line comment or / * multiline comment
+	     * lets handle out 3 possibilities with handleSlash()
 	     */
 	case '/':
 	    buffer[0] = c;
-	    /*
-	     * if this if clause is true, there is surely an error
-	     * because mulOp can not be the last token of source.
-	     * anyway let parser handle it :)
-	     */
-	    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
-		skipch(input);
-		tl = addToken(tl, TOKEN_MULOP, buffer, input);
-	    }
-	    else if(c == '/')
-		while((c = fgetc(input)) != '\n' && c != EOF);
-	    else if(c == '*'){
-		while((c = fgetc(input))){
-		    if(c == EOF){
-			tl = addToken(tl, TOKEN_ERROR, buffer, input);
-			break;
-		    }
-		    else if( c != '*')
-			continue;
-		    else if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
-			tl = addToken(tl, TOKEN_ERROR, buffer, input);
-			break;
-		    }
-		    else if(c == '/') break;
-		    //is here problem?
-		    else
-			ungetc(input);
-		}
-	    }
-	    else
-		tl = addToken(tl, TOKEN_MULOP, buffer, input);
-
+	    if((tmp = handleSlash(tl, buffer, input)) != NULL)
+	       tl = tmp;
 	    break;
 
 	    /*
-	     * here we have operator types that cannot be returned only
-	     * after 1 char is read. that is because there is possibly
-	     * == <= >= operators. so after returning operator from this
-	     * casee, the ungetch() macro should be called
+	     * cases for all comparation excluded not equals token
 	     */
 	case '>': case '<': case '=':
 	    buffer[0] = c;
-	    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
-		skipch(input);
-	    else if(c == '=')
-		buffer[1] = c;
-
-	    if(strncmp(buffer, "=", TOKEN_MAX_LENGTH) == 0)
-		tl = addToken(tl, TOKEN_ASSOP, buffer, input);
-	    else{
-		tl = addToken(tl, TOKEN_COMPOP, buffer, input);
-		
-		if(strlen(buffer) > 1)
-		    skipch(input);
-	    }
+	    tl = handleComps(tl, buffer, input);
 	    break;
 
+	    /*
+	     * case for not equals operator
+	     */
 	case '!':
 	    buffer[0] = c;
-	    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
-		tl = addToken(tl, TOKEN_ERROR, buffer, input);
-	    if(c == '='){
-		buffer[1] = c;
-		tl = addToken(tl, TOKEN_COMPOP, buffer, input);
-		skipch(input);
-	    }
-	    else{
-		tl = addToken(tl, TOKEN_ERROR, buffer, input);
-		ungetc(input);
-	    }
+	    tl = handleNO(tl, buffer, input);
 	    break;
 	    
 	    /* here we skip all whitespaces */
 	case ' ': case '\n': case '\t':
 	    break;
 
-	    /* end of statement */
-	case ';':
-	    buffer[0] = c;
-	    tl = addToken(tl, TOKEN_SCOL, buffer, input);
-	    break;
-	    
 	    /* now the token is keyword, literal, variable or error token */
 	default:
-	    //next token is now key word or identifier
-	    if(isalpha(c)){                                       
-		ungetc(input);
-		//ota nyt tuo limitti huomioon!!!
-		for(i = 0; i <= TOKEN_MAX_LENGTH; i++){
-		    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
-			skipch(input);
-			break;
-		    }
-		    else if(isalnum(c) || c == '_')
-			buffer[i] = c;
-		    else
-			break;
-		}
-
-		if(isTypeKey(buffer))
-		    tl = addToken(tl, TOKEN_TYPEKEY, buffer, input);
-		else if(isIfKey(buffer))
-		    tl = addToken(tl, TOKEN_IFKEY, buffer, input);
-		else if(isWhileKey(buffer))
-		    tl = addToken(tl, TOKEN_WHILEKEY, buffer, input);
-		else if(isForKey(buffer))
-		    tl = addToken(tl, TOKEN_FORKEY, buffer, input);
-		else
-		    tl = addToken(tl, TOKEN_IDENTIFIER, buffer, input);
-
-	    }
-	    //next token is now integer literal or floating point literal
-	    else if(isdigit(c)){
-		ungetc(input);
-		for(i = 0; i <= TOKEN_MAX_LENGTH; i++){
-		    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
-			;//tee jotain
-		    if(isdigit(c))
-			buffer[i] = c;
-		    //liukulukuliteraali
-		    else if(c == '.'){
-			buffer[i] = c;
-			for(i++; i <= TOKEN_MAX_LENGTH; i++){
-			    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
-			       ;//tee jotain
-			    if(isdigit(c))
-				buffer[i] = c;
-			    else
-				goto breakpoint;
-			}
-		    }
-		    //kokonaislukuliteraali
-		    else
-			goto breakpoint;
-		}
-		
-	    breakpoint:
-		tl = addToken(tl, TOKEN_LITERAL, buffer, input);
-	    }
+	    
 	    /*
-	     * error tokens here! lets scan to next whitespace and
-	     * treat the whole word as an error token
+	     * next token is now key word or identifier
 	     */
-	    else{
-		for(i = 0; i < TOKEN_MAX_LENGTH; i++){
-		    buffer[i] = c;
-		    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
-			tl = addToken(tl, TOKEN_ERROR, buffer, input);
-			break;
-		    }
-		    if(c == ' ' || c == '\n' || c == '\t'){
-			tl = addToken(tl, TOKEN_ERROR, buffer, input);
-			break;
-		    }
-		}
-	    }
+	    if(isalpha(c))
+		tl = handleOthers(tl, buffer, input);
+	    
+	    /*
+	     * next token is now integer literal or
+	     * floating point literal
+	     */
+	    else if(isdigit(c))
+		tl = handleLiterals(tl, buffer, input);
+
+	    /*
+	     * everything else is error
+	     */
+	    else
+		tl = handleErrors(tl, buffer, input);
+
 	    break;
 	}
     }
@@ -246,20 +150,255 @@ token_list *lex(FILE *input){
     return head;
 }
 
+/*
+ * here we have three possibilities. the token may be a
+ * division operator '/' or it can be a start of comment of
+ * each type //one line comment or / * multiline comment
+ */
+static token_list *handleSlash(token_list *tl, char *buffer, FILE *input){
+    char c;
+
+    /* check for eof */
+    if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
+	skipch(input);
+	return addToken(tl, TOKEN_MULOP, buffer, input);
+    }
+    
+    /* 
+     * one line comment detected!
+     */
+    else if(c == '/')
+	while((c = fgetc(input)) != '\n' && c != EOF);
+    
+    /* 
+     * start of multiline comment
+     */
+    else if(c == '*'){
+
+	while((c = fgetc(input))){
+	    if(c == EOF)
+		return addToken(tl, TOKEN_ERROR, buffer, input);
+
+	    else if( c != '*')
+		continue;
+	    
+	    else if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+		return addToken(tl, TOKEN_ERROR, buffer, input);
+
+	    else if(c == '/') break;
+
+	    else
+		ungetc(input);
+	}
+    }
+    
+    /* it was just a division operator */
+    else
+	return addToken(tl, TOKEN_MULOP, buffer, input);
+
+    return NULL;
+}
+
+
+/*
+ * here we have operator types that cannot be returned only
+ * after 1 char is read. that is because there is possibly
+ * == <= >= operators. so after returning operator from this
+ * casee, the ungetch() macro should be called
+ */
+static token_list *handleComps(token_list *tl, char *buffer, FILE *input){
+    char c;
+    
+    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+	skipch(input);
+    else if(c == '=')
+	buffer[1] = c;
+
+    if(strncmp(buffer, "=", TOKEN_MAX_LENGTH) == 0)
+	return addToken(tl, TOKEN_ASSOP, buffer, input);
+    
+    else{
+
+	if(strlen(buffer) > 1)
+	    skipch(input);
+	
+	return addToken(tl, TOKEN_COMPOP, buffer, input);
+    }
+}
+
+/*
+ * case for not equals operator
+ */
+static token_list *handleNO(token_list *tl, char *buffer, FILE *input){
+    char c;
+    
+    if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+	tl = addToken(tl, TOKEN_ERROR, buffer, input);
+    
+    if(c == '='){
+	buffer[1] = c;
+	skipch(input);
+	return addToken(tl, TOKEN_COMPOP, buffer, input);
+    }
+    else{
+	ungetc(input);
+	return addToken(tl, TOKEN_ERROR, buffer, input);
+    }
+}
+
+/*
+ * here we have two possibilities. next token can be identifier
+ * or language key word. 
+ */
+static token_list *handleOthers(token_list *tl, char *buffer, FILE *input){
+    int  i;
+    char c;
+    
+    ungetc(input);
+
+    //ota nyt tuo limitti huomioon!!!
+    for(i = 0; i <= TOKEN_MAX_LENGTH; i++){
+
+	if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
+	    skipch(input);
+	    break;
+	}
+
+	else if(isalnum(c) || c == '_')
+	    buffer[i] = c;
+	else
+	    break;
+    }
+
+    if(isTypeKey(buffer))
+	return addToken(tl, TOKEN_TYPEKEY, buffer, input);
+    else if(isIfKey(buffer))
+	return addToken(tl, TOKEN_IFKEY, buffer, input);
+    else if(isWhileKey(buffer))
+	return addToken(tl, TOKEN_WHILEKEY, buffer, input);
+    else if(isForKey(buffer))
+	return addToken(tl, TOKEN_FORKEY, buffer, input);
+    else
+	return addToken(tl, TOKEN_IDENTIFIER, buffer, input);
+
+}
+
+/*
+ * literals can be either integer or floating point literals
+ */
+static token_list *handleLiterals(token_list *tl, char *buffer, FILE *input){
+    int  i;
+    char c;
+    
+    ungetc(input);
+    
+    for(i = 0; i <= TOKEN_MAX_LENGTH; i++){
+
+	if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
+	    skipch(input);
+	    return addToken(tl, TOKEN_LITERAL, buffer, input);
+	}
+		
+	if(isdigit(c))
+	    buffer[i] = c;
+
+	/*
+	 * floating point literal detected
+	 */
+	else if(c == '.'){
+	    buffer[i] = c;
+
+	    for(i++; i <= TOKEN_MAX_LENGTH; i++){
+
+		if(fread(&c, sizeof(char), 1, input) != sizeof(char)){
+		    skipch(input);
+		    return addToken(tl, TOKEN_LITERAL, buffer, input);
+		}
+
+		if(isdigit(c))
+		    buffer[i] = c;
+		else
+		    goto breakpoint;
+	    }
+	}
+
+	/*
+	 * end of the literal
+	 */
+	else
+	    goto breakpoint;
+    }
+		
+ breakpoint:
+    return addToken(tl, TOKEN_LITERAL, buffer, input);
+}
+
+/*
+ * error tokens here! lets scan to next whitespace and
+ * treat the whole word as an error token
+ */
+static token_list *handleErrors(token_list *tl, char *buffer, FILE *input){
+    int  i;
+    char c;
+    
+    for(i = 0; i < TOKEN_MAX_LENGTH; i++){
+	buffer[i] = c;
+
+	if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+	    break;
+
+	if(c == ' ' || c == '\n' || c == '\t')
+	    break;
+    }
+    
+    return addToken(tl, TOKEN_ERROR, buffer, input);
+}
+
+
+
+/*
+ * returns new token_list node all values initialized to NULL
+ */
+static token_list *newTokenList(void){
+    token_list *tl = (token_list *)malloc(sizeof(token_list));
+
+    tl->value = NULL;
+    tl->next  = NULL;
+    
+    return tl;
+}
+
+/*
+ * this function creates and adds new token to the end of
+ * the token list. 
+ * 
+ * parameters:
+ *   tl is pointer to the end of the list
+ *   type is token type, one of the macros defined in lex.h
+ *   buffer is pointer to the token value of new token
+ *   input is pointer to input stream
+ *
+ * pointer to new node is returned
+ */
 static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input){
+    tl->next  = (token_list *)malloc(sizeof(token_list));
     tl->value = newToken(type, buffer);
-    tl->next = (token_list *)malloc(sizeof(token_list));
-    tl = tl->next;
-    tl->next = NULL;
+    tl        = tl->next;
+    tl->next  = NULL;
     tl->value = NULL;
 
+    /*
+     * here we have all tokens that can be added 
+     * without any backtracking. that means we do
+     * not need to ungetc the input stream
+     */
     if(type == TOKEN_ERROR                         ||
-       strncmp(buffer, "+", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(buffer, "-", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(buffer, "(", TOKEN_MAX_LENGTH) == 0 || 
-       strncmp(buffer, ")", TOKEN_MAX_LENGTH) == 0 ||
-       strncmp(buffer, ";", TOKEN_MAX_LENGTH) == 0)
+       type == TOKEN_ADDOP                         ||
+       type == TOKEN_LBRA                          ||
+       type == TOKEN_RBRA                          ||
+       type == TOKEN_SCOL                          ||
+       
+       strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0)
 	;
     else
 	ungetc(input);
@@ -268,6 +407,7 @@ static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE 
 }
 
 /*
+ * return new token initialized by parameters.
  * this function expects that type and value are correct!
  */
 static token *newToken(token_type type, char *value){
@@ -279,30 +419,53 @@ static token *newToken(token_type type, char *value){
     return t;
 }
 
+/*
+ * Following functions are used to check if the buffer
+ * contains one of the reserved key words in the language.
+ *
+ * input parameter word is pointer to buffer in switch statement
+ * return 1 if it is reserved key we are looking for, 0 otherwise
+ */
 static int isIfKey(char *word){
+
     if(strncmp(word, "if", TOKEN_MAX_LENGTH)    == 0)
 	return 1;
     
     return 0;
 }     
 static int isTypeKey(char *word){
+
     if(strncmp(word, "int", TOKEN_MAX_LENGTH)   == 0 ||
        strncmp(word, "float", TOKEN_MAX_LENGTH) == 0 )
 	return 1;
     
     return 0;
 }
+
 static int isForKey(char *word){
+
     if(strncmp(word, "for", TOKEN_MAX_LENGTH)   == 0 )
 	return 1;
 
     return 0;
 }
+
 static int isWhileKey(char *word){
-    if(strncmp(word, "while", TOKEN_MAX_LENGTH)  == 0 )
+
+    if(strncmp(word, "while", TOKEN_MAX_LENGTH) == 0 )
 	return 1;
 
     return 0;
+}
+
+/*
+ * this function adds special EOF token
+ * to the end of the token list
+ */
+static void addEOF(token_list *tl){
+    for(; tl->next; tl=tl->next);
+
+    tl->value = newToken(TOKEN_EOF, "EOF");
 }
 
 /*
@@ -319,17 +482,3 @@ void printTokenList(token_list *list){
 
 }
 
-static token_list *newTokenList(void){
-    token_list *tl = (token_list *)malloc(sizeof(token_list));
-
-    tl->value = NULL;
-    tl->next  = NULL;
-    
-    return tl;
-}
-
-static void addEOF(token_list *tl){
-    for(; tl->next; tl=tl->next);
-
-    tl->value = newToken(TOKEN_EOF, "EOF");
-}
