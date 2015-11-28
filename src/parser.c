@@ -1,44 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "tokens.h"
+#include "tree.h"
 #include "parser.h"
-#include "lex.h"
+#include "memory.h"
 
 static enum {CONSUME, NO_CONSUME} asdads;
 
 static token *match(token_type tt, consumption_type ct);
 
-static program_node *program(void);
-static stmt_lst_node *statement_list(void);
-static stmt_node *statement(void);
-static ass_node *assignment(void);
-static fac_node *factor(void);
-static fac_tail_node *factor_tail(void);
-static term_node *term(void);
-static term_tail_node *term_tail(void);
-static exp_node *expression(void);
-static dec_node *declaration(void);
-static if_node *if_(void);
-static while_node *while_(void);
-static for_node *for_(void);
-static comp_node *comparation(void);
+static program_node   *program        (void);
+static stmt_lst_node  *statement_list (void);
+static stmt_node      *statement      (void);
+static ass_node       *assignment     (void);
+static fac_node       *factor         (void);
+static fac_tail_node  *factor_tail    (void);
+static term_node      *term           (void);
+static term_tail_node *term_tail      (void);
+static exp_node       *expression     (void);
+static dec_node       *declaration    (void);
+static if_node        *if_            (void);
+static while_node     *while_         (void);
+static for_node       *for_           (void);
+static comp_node      *comparation    (void);
 
-static program_node *newProgramNode(void);
-static stmt_lst_node *newStmtLstNode(void);
-static stmt_node *newStmtNode(void);
-static ass_node *newAssNode(void);
-static fac_node *newFacNode(void);
-static fac_tail_node *newFacTailNode(void);
-static term_node *newTermNode(void);
-static term_tail_node *newTermTailNode(void);
-static exp_node *newExpNode(void);
-static dec_node *newDecNode(void);
-static if_node *newIfNode(void);
-static while_node *newWhileNode(void);
-static for_node *newForNode(void);
-static comp_node *newCompNode(void);
 
-static token_list *tl;
+static token_list *global_tlist;
 
 static int errorv;
 static void *error = &errorv;
@@ -54,7 +42,7 @@ static void *error = &errorv;
 		   
 program_node *parse(token_list *tlist){
     (void) asdads; //for not causing warning about unused variable
-    tl = tlist;
+    global_tlist = tlist;
 
     return program();
 }
@@ -138,6 +126,72 @@ static stmt_node *statement(void){
     return NULL;
 }
 
+static if_node *if_(void){
+    if_node *ifn = newIfNode();
+
+    if((ifn->ifKey = match(TOKEN_IFKEY, CONSUME)) != NULL)
+	if((ifn->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
+	    if((ifn->compn = comparation()) != NULL)
+		if((ifn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
+		    if((ifn->stmtn = statement()) != NULL)
+			return ifn;
+    return NULL;
+}
+
+static while_node *while_(void){
+    while_node *whilen = newWhileNode();
+
+    if((whilen->whileKey = match(TOKEN_WHILEKEY, CONSUME)) != NULL)
+	if((whilen->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
+	    if((whilen->compn = comparation()) != NULL)
+		if((whilen->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
+		    if((whilen->stmtn = statement()) != NULL)
+			return whilen;
+    return NULL;
+}
+
+static for_node *for_(void){
+    for_node *forn = newForNode();
+
+    if((forn->forKey = match(TOKEN_FORKEY, CONSUME)) != NULL)
+	if((forn->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
+	    if((forn->assn = assignment()) != NULL)
+		if((forn->compn = comparation()) != NULL)
+		    if((forn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
+			if((forn->id = match(TOKEN_IDENTIFIER, CONSUME)) != NULL) 
+			    if((forn->assOp = match(TOKEN_ASSOP, CONSUME)) != NULL)
+				if((forn->expn = expression()) != NULL)
+				    if((forn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
+					if((forn->stmtn = statement()) != NULL)
+					    return forn;
+    return NULL;
+}
+
+static comp_node *comparation(void){
+    comp_node *compn = newCompNode();
+
+    if((compn->expn = expression()) != NULL)
+	if((compn->compOp = match(TOKEN_COMPOP, CONSUME)) != NULL)
+	    if((compn->expn2 = expression()) != NULL)
+		return compn;
+    
+    return NULL;
+}
+
+static dec_node *declaration(void){
+    dec_node *decn = newDecNode();
+
+    if((decn->typeKey = match(TOKEN_TYPEKEY, CONSUME)) != NULL){
+	if((decn->id = match(TOKEN_IDENTIFIER, CONSUME)) != NULL);
+	   if((decn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
+	       return decn;
+    }
+    else if((decn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
+	return decn;
+    
+    return NULL;
+}
+
 static ass_node *assignment(void){
     ass_node *assn = newAssNode();
 
@@ -201,6 +255,7 @@ static fac_node *factor(void){
     if((facn->id = match(TOKEN_IDENTIFIER, CONSUME)) != NULL ||
        (facn->lit = match(TOKEN_LITERAL,    CONSUME)) != NULL)
 	return facn;
+
     else if((facn->lbra = match(TOKEN_LBRA, CONSUME)) != NULL){
 	if((facn->expn = expression()) != NULL)
 	    if((facn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
@@ -227,232 +282,24 @@ static fac_tail_node *factor_tail(void){
     return error;
 }
 
-static dec_node *declaration(void){
-    dec_node *decn = newDecNode();
-
-    if((decn->typeKey = match(TOKEN_TYPEKEY, CONSUME)) != NULL){
-	if((decn->id = match(TOKEN_IDENTIFIER, CONSUME)) != NULL);
-	   if((decn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
-	       return decn;
-    }
-    else if((decn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
-	return decn;
-    
-    return NULL;
-}
-
-static comp_node *comparation(void){
-    comp_node *compn = newCompNode();
-
-    if((compn->expn = expression()) != NULL)
-	if((compn->compOp = match(TOKEN_COMPOP, CONSUME)) != NULL)
-	    if((compn->expn2 = expression()) != NULL)
-		return compn;
-    
-    return NULL;
-}
-
-static if_node *if_(void){
-    if_node *ifn = newIfNode();
-
-    if((ifn->ifKey = match(TOKEN_IFKEY, CONSUME)) != NULL)
-	if((ifn->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
-	    if((ifn->compn = comparation()) != NULL)
-		if((ifn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
-		    if((ifn->stmtn = statement()) != NULL)
-			return ifn;
-    return NULL;
-}
-
-static while_node *while_(void){
-    while_node *whilen = newWhileNode();
-
-    if((whilen->whileKey = match(TOKEN_WHILEKEY, CONSUME)) != NULL)
-	if((whilen->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
-	    if((whilen->compn = comparation()) != NULL)
-		if((whilen->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
-		    if((whilen->stmtn = statement()) != NULL)
-			return whilen;
-    return NULL;
-}
-
-static for_node *for_(void){
-    for_node *forn = newForNode();
-
-    if((forn->forKey = match(TOKEN_FORKEY, CONSUME)) != NULL)
-	if((forn->lbra = match(TOKEN_LBRA, CONSUME)) != NULL)
-	    if((forn->assn = assignment()) != NULL)
-		if((forn->compn = comparation()) != NULL)
-		    if((forn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
-			if((forn->id = match(TOKEN_IDENTIFIER, CONSUME)) != NULL) 
-			    if((forn->assOp = match(TOKEN_ASSOP, CONSUME)) != NULL)
-				if((forn->expn = expression()) != NULL)
-				    if((forn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
-					if((forn->stmtn = statement()) != NULL)
-					    return forn;
-    return NULL;
-}
-    
+/*
+ * this function checks whether the next token in the
+ * stream is that the caller is looking for. parameter
+ * tt is the token and ct tells whether it is "consumed"
+ * or not. consuming means that we move to next token
+ * in the list.
+ */
 static token *match(token_type tt, consumption_type ct){
     token *t;
-    if(tl->value->type == tt){
+
+    if(global_tlist->value->type == tt){
+
 	if(ct == CONSUME){
-	    t = tl->value;
-	    tl = tl->next;
+	    t = global_tlist->value;
+	    global_tlist = global_tlist->next;
 	}
 	return t;
     }
     return NULL;
 }
 
-static program_node *newProgramNode(void){
-    program_node *r = (program_node*)malloc(sizeof(program_node));
-
-    r->sln = NULL;
-    r->eof = NULL;
-
-    return r;
-}
-
-static stmt_lst_node *newStmtLstNode(void){
-    stmt_lst_node *r = (stmt_lst_node*)malloc(sizeof(stmt_lst_node));
-
-    r->stmtn = NULL;
-    r->sln   = NULL;
-
-    return r;
-}
-
-static stmt_node *newStmtNode(void){
-    stmt_node *r = (stmt_node*)malloc(sizeof(stmt_node));
-
-    r->ifn = NULL;
-    r->forn = NULL;
-    r->whilen = NULL;
-    r->assn = NULL;
-    r->decn = NULL;
-
-    return r;
-}
-
-static ass_node *newAssNode(void){
-    ass_node *r = (ass_node*)malloc(sizeof(ass_node));
-
-    r->id = NULL;
-    r->assOp = NULL;
-    r->expn = NULL;
-    r->scol = NULL;
-
-    return r;
-}
-
-static term_node *newTermNode(void){
-    term_node *r = (term_node*)malloc(sizeof(term_node));
-
-    r->facn = NULL;
-    r->factln = NULL;
-
-    return r;
-}
-
-static exp_node *newExpNode(void){
-    exp_node *r = (exp_node*)malloc(sizeof(exp_node));
-
-    r->termn = NULL;
-    r->termtln = NULL;
-
-    return r;
-}
-
-static term_tail_node *newTermTailNode(void){
-    term_tail_node *r = (term_tail_node*)malloc(sizeof(term_tail_node));
-
-    r->addOp = NULL;
-    r->termn = NULL;
-    r->termtln = NULL;
-
-    return r;
-}
-
-static fac_node *newFacNode(void){
-    fac_node *r = (fac_node*)malloc(sizeof(fac_node));
-
-    r->lbra = NULL;
-    r->expn = NULL;
-    r->rbra = NULL;
-    r->id = NULL;
-    r->lit = NULL;
-
-    return r;
-}
-
-static fac_tail_node *newFacTailNode(void){
-    fac_tail_node *r = (fac_tail_node*)malloc(sizeof(fac_tail_node));
-
-    r->mulOp = NULL;
-    r->facn = NULL;
-    r->factln = NULL;
-
-    return r;
-}
-
-static dec_node *newDecNode(void){
-    dec_node *r = (dec_node*)malloc(sizeof(dec_node));
-
-    r->typeKey = NULL;
-    r->id = NULL;
-    r->scol = NULL;
-
-    return r;
-}
-
-static comp_node *newCompNode(void){
-    comp_node *r = (comp_node*)malloc(sizeof(comp_node));
-
-    r->expn = NULL;
-    r->compOp = NULL;
-    r->expn2 = NULL;
-
-    return r;
-}
-
-static if_node *newIfNode(void){
-    if_node *r = (if_node*)malloc(sizeof(if_node));
-
-    r->ifKey = NULL;
-    r->lbra = NULL;
-    r->compn = NULL;
-    r->rbra = NULL;
-    r->stmtn = NULL;
-
-    return r;
-}
-    
-static while_node *newWhileNode(void){
-    while_node *r = (while_node*)malloc(sizeof(while_node));
-
-    r->whileKey = NULL;
-    r->lbra = NULL;
-    r->compn = NULL;
-    r->rbra = NULL;
-    r->stmtn = NULL;
-
-    return r;
-}
-    
-static for_node *newForNode(void){
-    for_node *r = (for_node*)malloc(sizeof(for_node));
-
-    r->forKey = NULL;
-    r->lbra = NULL;
-    r->assn = NULL;
-    r->compn = NULL;
-    r->scol = NULL;
-    r->id = NULL;
-    r->assOp = NULL;
-    r->expn = NULL;
-    r->rbra = NULL;
-    r->stmtn = NULL;
-
-    return r;
-}

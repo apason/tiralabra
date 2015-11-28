@@ -47,14 +47,17 @@ Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
  * program         = statement_list | EOF
  * statement_list  = statement statement_list | epsilon       
  * statement       = if | while | for | declaration | assignment
- * expression      = term term_tail
- * term_tail       = addOp term term_tail | epsilon
- * term            = factor factor_tail
- * factor_tail     = mulOp factor factor_tail | epsilon
- * factor          = ( expression ) | identifier | literal
  * if              = if ( comparation ) statement
  * while           = while ( comparation ) statement
  * for             = for (assignment comparation ; id = expression) statement
  * comparation     = expression compop expression
  * declaration     = type id ; 
  * assignment      = id = expression ; | ;
+ * expression      = term term_tail
+ * term            = factor factor_tail
+ * term_tail       = addOp term term_tail | epsilon
+ * factor          = ( expression ) | identifier | literal
+ * factor_tail     = mulOp factor factor_tail | epsilon
+
+
+

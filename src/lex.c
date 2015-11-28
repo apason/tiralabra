@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include "lex.h"
+#include "tokens.h"
+#include "memory.h"
 
 static token_list *handleOthers  (token_list *tl, char *buffer, FILE *input);
 static token_list *handleLiterals(token_list *tl, char *buffer, FILE *input);
@@ -12,8 +14,6 @@ static token_list *handleSlash   (token_list *tl, char *buffer, FILE *input);
 static token_list *handleErrors  (token_list *tl, char *buffer, FILE *input);
 static token_list *handleNO      (token_list *tl, char *buffer, FILE *input);
     
-static token_list *addToken      (token_list *tl, token_type type, char *buffer, FILE *input);
-static token      *newToken      (token_type type, char *value);
 
 static int        isTypeKey      (char *word);
 static int        isIfKey        (char *word);
@@ -21,7 +21,7 @@ static int        isWhileKey     (char *word);
 static int        isForKey       (char *word);
 
 static void        addEOF        (token_list *tl);
-static token_list *newTokenList  (void);
+
 
 /*
  * this is the main function of lexical analyzer. it is called
@@ -352,71 +352,6 @@ static token_list *handleErrors(token_list *tl, char *buffer, FILE *input){
     }
     
     return addToken(tl, TOKEN_ERROR, buffer, input);
-}
-
-
-
-/*
- * returns new token_list node all values initialized to NULL
- */
-static token_list *newTokenList(void){
-    token_list *tl = (token_list *)malloc(sizeof(token_list));
-
-    tl->value = NULL;
-    tl->next  = NULL;
-    
-    return tl;
-}
-
-/*
- * this function creates and adds new token to the end of
- * the token list. 
- * 
- * parameters:
- *   tl is pointer to the end of the list
- *   type is token type, one of the macros defined in lex.h
- *   buffer is pointer to the token value of new token
- *   input is pointer to input stream
- *
- * pointer to new node is returned
- */
-static token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input){
-    tl->next  = (token_list *)malloc(sizeof(token_list));
-    tl->value = newToken(type, buffer);
-    tl        = tl->next;
-    tl->next  = NULL;
-    tl->value = NULL;
-
-    /*
-     * here we have all tokens that can be added 
-     * without any backtracking. that means we do
-     * not need to ungetc the input stream
-     */
-    if(type == TOKEN_ERROR                         ||
-       type == TOKEN_ADDOP                         ||
-       type == TOKEN_LBRA                          ||
-       type == TOKEN_RBRA                          ||
-       type == TOKEN_SCOL                          ||
-       
-       strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0)
-	;
-    else
-	ungetc(input);
-    
-    return tl;
-}
-
-/*
- * return new token initialized by parameters.
- * this function expects that type and value are correct!
- */
-static token *newToken(token_type type, char *value){
-    token *t = (token *)malloc(sizeof(token));
-    
-    t->type = type;
-    strncpy(t->value, value, TOKEN_MAX_LENGTH +1);
-
-    return t;
 }
 
 /*

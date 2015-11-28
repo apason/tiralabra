@@ -2,7 +2,7 @@ CC=       gcc
 STD=      _GNU_SOURCE_
 OBJS=     main.o
 INCLUDE=  -I "../../../src/"
-LEX=	   ../../../src/lex.o
+OTHERS=	   ../../../src/lex.o ../../../src/memory.o ../../../src/semantics.o
 CFLAGS=   -Wall -D$(STD) $(INCLUDE) -c
 TARGET=   ../../target/
 
@@ -12,7 +12,7 @@ TARGET=   ../../target/
 all:	lex_test
 
 lex_test:	$(OBJS)
-	$(CC) $(OBJS) $(LEX)  -o $(TARGET)lex_test
+	$(CC) $(OBJS) $(OTHERS)  -o $(TARGET)lex_test
 
 clean:
 	rm *.o

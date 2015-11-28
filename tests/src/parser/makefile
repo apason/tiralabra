@@ -2,7 +2,7 @@ CC=       gcc
 STD=      _GNU_SOURCE_
 OBJS=     main.o
 INCLUDE=  -I "../../../src/"
-OTHERS=   ../../../src/lex.o ../../../src/parser.o
+OTHERS=   ../../../src/lex.o ../../../src/parser.o ../../../src/memory.o ../../../src/semantics.o
 CFLAGS=   -Wall -D$(STD) $(INCLUDE) -c
 TARGET=   ../../target/
 
