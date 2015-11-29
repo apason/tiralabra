@@ -20,7 +20,7 @@ static int        isIfKey        (char *word);
 static int        isWhileKey     (char *word);
 static int        isForKey       (char *word);
 
-static void        addEOF        (token_list *tl);
+static void       addEOF         (token_list *tl);
 
 
 /*

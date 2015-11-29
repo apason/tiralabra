@@ -3,8 +3,7 @@
 
 #include "tree.h"
 #include "tokens.h"
-#include "semantics.h"
-
+#include "label.h"
 /*
  * here is all declarations of memory related functions.
  */
@@ -34,6 +33,6 @@ comp_node      *newCompNode    (void);
 
 
 // SEMANTIC ANALYSIS ---------------------------------------------
-label_list *newLabelListNode(label *l, label_type lt);
+label_list *newLabelListNode(label_list **list, label *l, label_type lt);
 
 #endif

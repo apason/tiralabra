@@ -15,4 +15,4 @@ clean:
 
 clobber:
 	$(MAKE) -C $(SRC) clobber
-	$(MAKE) -C (TESTS) clobber
+	$(MAKE) -C $(TESTS) clobber

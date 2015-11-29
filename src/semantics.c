@@ -4,7 +4,7 @@
 
 #include "tokens.h"
 #include "tree.h"
-#include "semantics.h"
+#include "label.h"
 #include "memory.h"
 
 
@@ -48,8 +48,8 @@ static int         assignment      (ass_node *assn);
  * id = expression part of for nores
  */
 
-label_list *global_list;
-label_type global_type;
+static label_list *global_list;
+static label_type global_type;
 
 /*
  * main function of semantic analysis. semantics checking
@@ -236,7 +236,7 @@ static int factor(fac_node *facn){
  */
 
 static int insert(token *id, label_type lt){
-    label_list *tmp = newLabelListNode((label*)id->value, lt);
+    label_list *tmp = newLabelListNode(&global_list, (label*)id->value, lt);
     label_list *prev;
 
     global_list = tmp;

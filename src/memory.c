@@ -5,7 +5,7 @@
 #include "tokens.h"
 #include "tree.h"
 #include "lex.h"
-#include "semantics.h"
+#include "label.h"
 
 
 /*
@@ -238,12 +238,12 @@ for_node *newForNode(void){
 
 
 // SEMANTIC ANALYSIS -----------------------------------------------------
-label_list *newLabelListNode(label *l, label_type lt){
+label_list *newLabelListNode(label_list **list, label *l, label_type lt){
     label_list *new = (label_list*)malloc(sizeof(label_list));
 
     new->l    = l;
     new->lt   = lt; 
-    new->next = global_list; //head of the label list
+    new->next = *list; //head of the label list
 
     return new;
 }

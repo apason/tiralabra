@@ -13,6 +13,4 @@ typedef struct LABEL_LIST{
 
 }label_list;
 
-extern label_list *global_list;
-
 #endif
