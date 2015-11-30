@@ -39,3 +39,5 @@ luvuilla (siis esim 5 > 1.5).
 Koodin generointi suoritetaan ttk-15 arkkitehtuurille. Tämä tapahtuu syntaksipuuta läpikäyden samalla
 kerralla kuin semantiikka tarkistetaan.
 
+Koska ohjelma sisältää syntaksin ja semantiikan tarkastuksen lisäksi myös koodin generoinnin, on
+projekti oikeastaan kokonainen ohjelmointikieli ja sille tehty kääntäjä.

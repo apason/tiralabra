@@ -29,6 +29,8 @@ linkkerille parametrina saatu .o15 tiedosto: linker result.o15
 Nyt linkerin antama tiedosto a.out.b15 voidaan suorittaa ttk-15 emulaattorilla. Suoritus tapahtuu
 yksinkertaisimmillaan antamalla binääritiedosto parametriksi ohjelmalle ttk-15: ttk-15 a.out.b15
 
+Tarkemmat ohjeet ttk-15 käyttämiseen löytyy osoitteesta https://github.com/apason/ttk-15/tree/master/doc
+
 Jos syntaksissa tai semantiikassa on virhe, tulostuu syytä kuvaava virheviesti ja suoritus keskeytetään.
 
-HUOM! Suosittelen lukemaan tiedoston doc/toteutusdokumentti.md kohdan "puutteet ja parannusehdotukset" -> syötteen luku.
+HUOM! Suosittelen lukemaan tiedoston doc/toteutusdokumentti.md kohdan "puutteet ja parannusehdotukset" -> tulostus.

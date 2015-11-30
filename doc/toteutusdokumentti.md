@@ -76,6 +76,7 @@ ja term_tail. käytetään seuraavaa templatea:
  * push sp, r3
  * load r3, =<value=2
  * push sp, r3
+
 Nyt molempien expressioiden arvot on pinossa tulevaa laskentaa vartenä
 Tämän jälkeen vertailufunktio kutsuu templatea vertailun tarkistamiseen:
  * load r0, =0
@@ -86,6 +87,7 @@ Tämän jälkeen vertailufunktio kutsuu templatea vertailun tarkistamiseen:
  * jump =_comp0_end
  * _comp0_true load r0, =1
  * _comp0_end nop
+
 Se siis lataa argumentit pinosta ja suorittaa comp konekäskyn argumenteille. Tämän jälkeen
 käytetään jequ konekäskyä (koska ==). Jos vertailu tuotti halutun tuloksen (eli on true)
 laitetaan rekisterin r0 arvoksi 1, jos se oli väärä sinne jää arvo 0. Koska comparation
@@ -144,6 +146,7 @@ tehdä yhtään mitään! Konekieleen perehtyneelle ohjelmoijalle ei kuitenkaan 
 lukua vaikkapa muuttujaan x ja kirjoittaa itse manuaalisesti käännetyn ohjelman loppuun
  * load r1, x
  * out r1, =CRT
+
 jolloin ohjelma myös tulostaa lasketun arvon. (Tämä on siis toistaiseksi ainoa keino saada laskettuja
 arvoja tulostettua käyttäjälle ja tähän koodin generoinnin testauksetkin perustuvat)Tämä vaihe pitäisi kuitenkin jotenkin lisätä kääntäjään.
 Paras tapa olisi lisätä kieleen jonkin lainen /! ...konekoodia... !/ lohko jonka sisällä oleva konekoodi
@@ -195,6 +198,6 @@ tulevaisuudessa jos ttk-15 käskykanta on laajennettu sisältämään käskyt ty
 ##lähteet##
  * Eniten käytettynä lähteenä Michael L. Scott - Programming Language Pragmatics - Morgan Caufmann (2009)
  * Juha Vihavaisen kalvot kääntäjä kurssilta 2014 (näyttää olevan aika pitkälti referointia ylemmästä lähteestä)
- * Laskennan mallit kurssin pruju Jyrki Kivinen (2011)
+ * Laskennan mallit kurssin pruju Jyrki Kivinen (2011) osa "kontekstittomat kielet"
  * Myös tällaista vilkaisin: Let's Build a Compiler - Jack Crenshaw tutoriaali osoitteessa http://www.compilers.iecc.com/crenshaw/
  * Luin myös hieman ohjelmien lex ja yacc dokumentointia
