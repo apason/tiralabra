@@ -44,7 +44,8 @@ Tämän perusteella rajatapaukset ovat melko hyvin testattu. Testit on tehty nim
 tokeneittain, mutta esim jokaista operaattoria ei ole erikseen toistaiseksi testattu.
 (syntaksianalyysin testeissä on testattu myös jokainen operaattori ja mahdollisuus)
 esim. TOKEN_COMPOP testi testaa vertailussa käytettäviä operaattoreita, mutta kaikkia
-== != < <= > >= niitä ei ole testattu
+== != < <= > >= niitä ei ole testattu. Toisaalta kaikki operaattorit on testattu vähintään
+kerran jossain testauksen vaiheessa.
 
 Viikolla 4 lisättiin ohjelmaan TOKEN_EOF joka siis ilmoittaa token virran päättymisestä.
 Jotta testejä ei olisi tarvinnut muuttaa, tämä token lisätään implisiittisesti jokaisen
@@ -67,13 +68,32 @@ myös kaikki eri vertailuoperaattorit sekä aritmeettiset operaattorit. Myös ty
 lauseita on testattu erikseen sekä toisto ja ehtolauseiden kanssa.
 
 ##semanttinen analyysi##
-Tähän ei vielä ole ollenkaan testejä. Semantiikan oikeellisuutta on testattu manuaalisesti
-ja kaikki näyttäisi olevan kunnossa. Viikolla 6 tähänkin tulee testit.
+Semanttinen analyysi testataan käytännössä täysin samalla tavalla kuin syntaktinen analyysi.
+Erona näiden kahden välillä on käytännössä ohjelman main funktio. Semantiikan tarkastuksen
+main funktio ajaa vielä parserilta saadun syntaksipuun checkSemantics funktion läpi.
+Muutoin kaikki toimii samalla tavalla eli tulos 0 tai 1 palautetaan suorituksen
+ympäristömuuttujalle ja skripti lukee tästä arvoja ja vertaa odotettuun.
+
+Testattu on kaikkia rajatapauksia, mm.
+ * määrittämättömän muuttujan käyttö
+ * oikein määritellyn muuttujan käyttö
+ * eri tietotyyppien käyttö samassa lauseessa
+ * eri tietotyyppien käyttö toisistaan erillään
+ * muuttujan määrittely useampaan kertaan
+ * eri tietotyyppien käyttö vertailulauseessa
+
+Kaikkia edellä mainittuja tapauksia on testattu useammin kuin kerran.
+
+##koodin generointi##
+Koodin generointia eli lopullista ohjelman tulostetta on testattu vain manuaalisesti.
+En tiedä kannattaako tähän tehdä automaattisia testejä, koska se edellyttäisi
+ttk-15 binäärien liittämistä projektiin. Manuaaliset testit ovat kuitenkin kaikki
+tuottaneet odotetun lopputuloksen
 
 ##testien ajaminen##
 
-Molemmat testit voidaan ajaa suoraan testiskriptistä hakemistoissa tests/asd/test.sh
-missä asd on joko "lex" tai "parser". Testeille on kuitenkin tehty oma makefile
+Kaikki testit voidaan ajaa suoraan testiskriptistä hakemistoissa tests/asd/test.sh
+missä asd on joko "lex", "parser" tai "semantics". Testeille on kuitenkin tehty oma makefile
 tiedosto, joka löytyy tests/ hakemiston juuresta. Tätä makefileä (tai test.sh tietostoja) ei kuitenkaan ole
 suunniteltu suoritettavaksi sellaisenaan vaan oikea tapa suorittaa testit on suorittaa
 projektin juuressa oleva makefile parametrillä "tests". Jos testis suorittaa jollakin
