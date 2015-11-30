@@ -51,6 +51,8 @@ static int         assignment      (ass_node *assn);
 static label_list *global_list;
 static label_type global_type;
 
+static FILE *output;
+
 /*
  * main function of semantic analysis. semantics checking
  * includes that there is no use of undefined variables and
@@ -60,9 +62,12 @@ static label_type global_type;
  * input parameter *pn is pointer to syntax tree
  * return 1 if there was no errors, 0 otherwise.
  */
-int checkSemantics(program_node *pn){
+int checkSemantics(program_node *pn, FILE *outputfile){
     global_list = NULL;
     global_type = UNDEF;
+
+    output = outputfile;
+    (void)output ;
 
     return program(pn);
 }
@@ -74,7 +79,11 @@ int checkSemantics(program_node *pn){
  * 1 otherwise.
  */
 static int program(program_node *pn){
-    return statementList(pn->sln);
+    if(statementList(pn->sln) == 0) return 0;
+
+    fprintf(output, "svc sp, =HALT\n");
+
+    return 1;
 }
 
 static int statementList(stmt_lst_node *sln){
@@ -92,15 +101,44 @@ static int statement(stmt_node *stmtn){
 }
 
 static int if_(if_node *ifn){
+    static int if_nro = 0;
+    int        if_cur = if_nro;
+
+    if_nro++;
+
     if(ifn == NULL) return 1;
-    
-    return comparation(ifn->compn) && statement(ifn->stmtn);
+
+    if(comparation(ifn->compn) == 0) return 0;
+
+    fprintf(output, "jzer r0, =_if%d_end\n", if_cur);
+
+    if(statement(ifn->stmtn) == 0) return 0;
+
+    fprintf(output, "_if%d_end nop\n", if_cur);
+
+    return 1;
 }
 
 static int while_(while_node *whilen){
-    if(whilen == NULL) return 1;
+    static int while_nbr = 0;
+    int        while_cur = while_nbr;
+
+    while_cur++;
     
-    return comparation(whilen->compn) && statement(whilen->stmtn);
+    if(whilen == NULL) return 1;
+
+    fprintf(output, "_while%d_beginning nop\n", while_cur);
+
+    if(comparation(whilen->compn) == 0) return 0;
+
+    fprintf(output, "jzer r0, =_while%d_end\n", while_cur);
+    
+    if(statement(whilen->stmtn) == 0) return 0;
+
+    fprintf(output, "jump =_while%d_beginning\n", while_cur);
+    fprintf(output, "_while%d_end nop\n", while_cur);
+
+    return 1;
 }
 
 /*
@@ -108,19 +146,38 @@ static int while_(while_node *whilen){
  * should has the same type as the following expression subtree
  */
 static int for_(for_node *forn){
-    if(forn == NULL) return 1;
-    
-    if( assignment(forn->assn) && comparation(forn->compn)){
-	
-	if((global_type = findLabelType(forn->id)) == 0)
-	    return 0;
+    static int for_nbr = 0;
+    int        for_cur = for_nbr;
 
-	if(expression(forn->expn)){
-	   global_type = UNDEF;
-	   return statement(forn->stmtn);
-	}
+    for_nbr++;
+    
+    if(forn == NULL) return 1;
+
+    if(assignment(forn->assn) == 0) return 0;
+
+    fprintf(output, "_for%d_beginning nop\n", for_cur);
+
+    if(comparation(forn->compn) == 0) return 0;
+
+    fprintf(output, "jzer r0, =_for%d_end\n", for_cur);
+
+    if(statement(forn->stmtn) == 0) return 0;
+    
+    if((global_type = findLabelType(forn->id)) == 0){
+	fprintf(stderr, "ERROR: undefined variable %s\n", forn->id->value);
+	return 0;
     }
-    return 0;
+
+    if(expression(forn->expn) == 0) return 0;
+
+    fprintf(output, "pop sp, r3\nstore r3, =%s\n", forn->id->value);
+    fprintf(output, "jump =_for%d_beginning\n", for_cur);
+    fprintf(output, "_for%d_end nop\n", for_cur);
+	    
+    global_type = UNDEF;
+
+
+    return 1;
 }
 
 /*
@@ -128,11 +185,34 @@ static int for_(for_node *forn){
  * kind of tokens. after checks global_type is reseted
  */
 static int comparation(comp_node *compn){
-    if(expression(compn->expn) && expression(compn->expn2)){
-	global_type = UNDEF;
-	return 1;
-    }
-    return 0;
+    static int comp_nbr = 0;
+    
+    if(expression(compn->expn) == 0 || expression(compn->expn2) == 0)
+	return 0;
+    
+    fprintf(output, "load r0, =0\npop sp, r2\npop sp, r1\ncomp r1, r2\n");
+
+    if(     (strncmp(compn->compOp->value, "==", TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jequ =_comp%d_true\n",  comp_nbr);
+    else if((strncmp(compn->compOp->value, "!=", TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jnequ =_comp%d_true\n", comp_nbr);
+    else if((strncmp(compn->compOp->value, "<=", TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jngre =_comp%d_true\n", comp_nbr);
+    else if((strncmp(compn->compOp->value, ">=", TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jnles =_comp%d_true\n", comp_nbr);
+    else if((strncmp(compn->compOp->value, "<",  TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jles =_comp%d_true\n",  comp_nbr);
+    else if((strncmp(compn->compOp->value, ">",  TOKEN_MAX_LENGTH) == 0))
+	fprintf(output, "jgre =_comp%d_true\n",  comp_nbr);
+
+    fprintf(output, "jump =_comp%d_end\n",        comp_nbr);
+    fprintf(output, "_comp%d_true load r0, =1\n", comp_nbr);
+    fprintf(output, "_comp%d_end nop\n",          comp_nbr);
+	
+    comp_nbr++;
+    global_type = UNDEF;
+	
+    return 1;
 }
 
 /*
@@ -150,7 +230,9 @@ static int declaration(dec_node *decn){
 	lt = FLOAT;
     
     if(insert(decn->id, lt) == 0) return 0;                    //duplicate definitio
-    
+
+    fprintf(output, "%s dc 0\nnop\n", decn->id->value);
+
     return 1;
 }
 
@@ -165,6 +247,7 @@ static int assignment(ass_node *assn){
 
 
     if(expression(assn->expn)){
+	fprintf(output, "pop sp, r3\nstore r3, =%s\n", assn->id->value);
 	global_type = UNDEF;
 	return 1;
     }
@@ -180,8 +263,23 @@ static int expression(exp_node *expn){
 
 static int termTail(term_tail_node *termtln){
     if(termtln == NULL) return 1;
+    if(term(termtln->termn) == 0)
+	return 0;
 
-    return term(termtln->termn) && termTail(termtln->termtln);
+    if(global_type == INT){
+	if(termtln->addOp->value[0] == '+')
+	    fprintf(output, "pop sp, r2\npop sp, r1\nadd r1, r2\npush sp, r1\n");
+	else
+	    fprintf(output, "pop sp, r2\npop sp, r1\nsub r1, r2\npush sp, r1\n");
+    }
+    else{
+	if(termtln->addOp->value[0] == '+')
+	    fprintf(output, "pop sp, r2\npop sp, r1\nfadd r1, r2\npush sp, r1\n");
+	else
+	    fprintf(output, "pop sp, r2\npop sp, r1\nfsub r1, r2\npush sp, r1\n");
+    }
+
+    return termTail(termtln->termtln);
 }
 
 static int term(term_node *termn){
@@ -190,9 +288,24 @@ static int term(term_node *termn){
 
 static int factorTail(fac_tail_node *factln){
     if(factln == NULL) return 1;
-
-    return factor(factln->facn) && factorTail(factln->factln);
+    if(factor(factln->facn) == 0)
+	return 0;
+    if(global_type == INT){
+	if(factln->mulOp->value[0] == '*')
+	    fprintf(output, "pop sp, r2\npop sp, r1\nmul r1, r2\npush sp, r1\n");
+	else
+	    fprintf(output, "pop sp, r2\npop sp, r1\ndiv r1, r2\npush sp, r1\n");
+    }
+    else{
+	if(factln->mulOp->value[0] == '*')
+	    fprintf(output, "pop sp, r2\npop sp, r1\nfmul r1, r2\npush sp, r1\n");
+	else
+	    fprintf(output, "pop sp, r2\npop sp, r1\nfdiv r1, r2\npush sp, r1\n");
+    }
+		    
+    return factorTail(factln->factln);
 }
+
 /*
  * factor nodes are the latest non-leaf nodes in the tree so
  * checks for compatible type operations has to be done here.
@@ -201,28 +314,53 @@ static int factor(fac_node *facn){
 
     if(facn->id != NULL){
 
-	if(global_type == UNDEF) 
-	    return (global_type = findLabelType(facn->id));
+	if(global_type == UNDEF) {
+	     global_type = findLabelType(facn->id);
+	     fprintf(output, "push sp, %s\n", facn->id->value);
+	     return 1;
+	}
 
 	else{
 	    if(global_type != findLabelType(facn->id)){
-	       fprintf(stderr, "Error: Mixing int and float types id\n");
+		fprintf(stderr, "Error: Mixing int and float types id\n");
 	       return 0;
 	    }
-	    else
+	    else{
+		fprintf(output, "push sp, %s\n", facn->id->value);
 		return 1;
+	    }
 	}
     }
     else if(facn->lit != NULL){
 
-	if(global_type == UNDEF)
-	    return (global_type = findLiteralType(facn->lit));
+	if(global_type == UNDEF){
+	    global_type = findLiteralType(facn->lit);
+	    // push sp, facn->lit->value   huom ota tyyppi huomioon!
+
+	    if(global_type == FLOAT)
+		fprintf(output, "fload r3, =%s\n", facn->lit->value);
+	    else
+		fprintf(output, "load r3, =%s\n", facn->lit->value);
+	    fprintf(output, "push sp, r3\n");
+
+	    return 1;
+	}
 	else{
 	    if(global_type != findLiteralType(facn->lit)){
 		fprintf(stderr, "Error: Mixing int and float types. expected value: %d\n", global_type);
 		return 0;
 	    }
-	    else return 1;
+	    else{
+		//push sp, factn->lit->value huom tyyppi!
+
+		if(global_type == FLOAT)
+		    fprintf(output, "fload r3, =%s\n", facn->lit->value);
+		else
+		    fprintf(output, "load r3, =%s\n", facn->lit->value);
+		fprintf(output, "push sp, r3\n");
+
+		return 1;
+	    }
 	}
     }
 

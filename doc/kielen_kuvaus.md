@@ -60,4 +60,3 @@ Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
  * factor_tail     = mulOp factor factor_tail | epsilon
 
 
-

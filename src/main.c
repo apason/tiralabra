@@ -1,11 +1,14 @@
 #include <stdio.h>
+#include <string.h>
+
 #include "lex.h"
 #include "parser.h"
 
-extern int checkSemantics(program_node *pn);
+extern int checkSemantics(program_node *pn, FILE *output);
 
 int main(int argc, char *argv[]){
     FILE *input = fopen(argv[1], "r");
+    FILE *output;
     if(input == NULL) return -1;
     token_list *tl = lex(input);
     if(tl == NULL){
@@ -15,9 +18,15 @@ int main(int argc, char *argv[]){
     }
     program_node *pn = parse(tl);
 
-    if(pn)
-	return checkSemantics(pn);
-    
+    if(pn){
+	int tmp;
+	output = fopen("result.k15", "w");
+	tmp =  checkSemantics(pn, output);
+	fclose(output);
+	return tmp;
+    }
+
+
     fprintf(stderr, "parse error\n");
     fflush(NULL);
     return 0;
