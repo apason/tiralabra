@@ -11,7 +11,7 @@ parser:
 	
 semantics:
 	$(MAKE) -C src/semantics
-	bash parser/test.sh
+	bash semantics/test.sh
 
 clean:
 	$(MAKE) -C src/parser clean

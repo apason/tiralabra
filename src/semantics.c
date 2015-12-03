@@ -63,13 +63,19 @@ static FILE *output;
  * return 1 if there was no errors, 0 otherwise.
  */
 int checkSemantics(program_node *pn, FILE *outputfile){
+    int tmp;
+    
     global_list = NULL;
     global_type = UNDEF;
 
     output = outputfile;
-    (void)output ;
 
-    return program(pn);
+    tmp = program(pn);
+
+    freeLabelList(global_list);
+    freeSyntaxTree(pn, NULL);
+
+    return tmp;
 }
 
 /*
@@ -315,7 +321,7 @@ static int factor(fac_node *facn){
     if(facn->id != NULL){
 
 	if(global_type == UNDEF) {
-	     global_type = findLabelType(facn->id);
+	     if((global_type = findLabelType(facn->id)) == 0) return 0;
 	     fprintf(output, "push sp, %s\n", facn->id->value);
 	     return 1;
 	}
@@ -335,7 +341,6 @@ static int factor(fac_node *facn){
 
 	if(global_type == UNDEF){
 	    global_type = findLiteralType(facn->lit);
-	    // push sp, facn->lit->value   huom ota tyyppi huomioon!
 
 	    if(global_type == FLOAT)
 		fprintf(output, "fload r3, =%s\n", facn->lit->value);

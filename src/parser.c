@@ -43,6 +43,10 @@ static void *error = &errorv;
 program_node *parse(token_list *tlist){
     (void) asdads; //for not causing warning about unused variable
     global_tlist = tlist;
+    /*
+     * this is for passing error pointer value to memory.o 
+     */
+    freeSyntaxTree(NULL, error);
 
     return program();
 }
@@ -73,10 +77,13 @@ static program_node *program(void){
        match(TOKEN_TYPEKEY,    NO_CONSUME)  ||
        match(TOKEN_SCOL,       NO_CONSUME)  ||
        match(TOKEN_IDENTIFIER, NO_CONSUME)){
-	if((pn->sln = statement_list()) != error)
+	if((pn->sln = statement_list()) != error){
 	    if((pn->eof = match(TOKEN_EOF, CONSUME)) != NULL)
 		return pn;
+	}
     }
+
+    freeProgram(pn);
     return NULL;   
 }
 
@@ -93,9 +100,12 @@ static stmt_lst_node *statement_list(void){
 	    if((sln->sln = statement_list()) != error)
 		return sln;
     }
-    else if(match(TOKEN_EOF, NO_CONSUME))
+    else if(match(TOKEN_EOF, NO_CONSUME)){
+	freeStmtLst(sln);
 	return NULL;
+    }
 
+    freeStmtLst(sln);
     return error;
 }
 
@@ -122,7 +132,8 @@ static stmt_node *statement(void){
     else if(match(TOKEN_FORKEY,  NO_CONSUME))
 	if((stmtn->forn = for_()) != NULL)
 	    return stmtn;
-    
+
+    freeStmt(stmtn);
     return NULL;
 }
 
@@ -135,6 +146,7 @@ static if_node *if_(void){
 		if((ifn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
 		    if((ifn->stmtn = statement()) != NULL)
 			return ifn;
+    freeIf(ifn);
     return NULL;
 }
 
@@ -147,6 +159,7 @@ static while_node *while_(void){
 		if((whilen->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
 		    if((whilen->stmtn = statement()) != NULL)
 			return whilen;
+    freeWhile(whilen);
     return NULL;
 }
 
@@ -164,6 +177,7 @@ static for_node *for_(void){
 				    if((forn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
 					if((forn->stmtn = statement()) != NULL)
 					    return forn;
+    freeFor(forn);
     return NULL;
 }
 
@@ -174,7 +188,8 @@ static comp_node *comparation(void){
 	if((compn->compOp = match(TOKEN_COMPOP, CONSUME)) != NULL)
 	    if((compn->expn2 = expression()) != NULL)
 		return compn;
-    
+
+    freeComp(compn);
     return NULL;
 }
 
@@ -188,7 +203,8 @@ static dec_node *declaration(void){
     }
     else if((decn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
 	return decn;
-    
+
+    freeDec(decn);
     return NULL;
 }
 
@@ -203,7 +219,8 @@ static ass_node *assignment(void){
     }
     else if((assn->scol = match(TOKEN_SCOL, CONSUME)) != NULL)
 	return assn;
-    
+
+    freeAss(assn);
     return NULL;
 }
 
@@ -216,7 +233,8 @@ static exp_node *expression(void){
 	if((expn->termn = term()) != NULL)
 	    if((expn->termtln = term_tail()) != error)
 		return expn;
-    
+
+    freeExp(expn);
     return NULL;
 }
 
@@ -229,7 +247,8 @@ static term_node *term(void){
 	if((termn->facn = factor()) != NULL)
 	    if((termn->factln = factor_tail()) != error)
 		return termn;
-    
+
+    freeTerm(termn);
     return NULL;
 }
 
@@ -243,9 +262,12 @@ static term_tail_node *term_tail(void){
     }
     else if(match(TOKEN_RBRA,   NO_CONSUME) ||
 	    match(TOKEN_SCOL,   NO_CONSUME) ||
-	    match(TOKEN_COMPOP, NO_CONSUME))
+	    match(TOKEN_COMPOP, NO_CONSUME)){
+	freeTermTail(termtln);
 	return NULL;
+    }
 
+    freeTermTail(termtln);
     return error;
 }
 
@@ -261,7 +283,8 @@ static fac_node *factor(void){
 	    if((facn->rbra = match(TOKEN_RBRA, CONSUME)) != NULL)
 		return facn;
     }
-    
+
+    freeFac(facn);
     return NULL;
 }
 
@@ -276,9 +299,12 @@ static fac_tail_node *factor_tail(void){
     else if(match(TOKEN_SCOL,   NO_CONSUME) ||
 	    match(TOKEN_ADDOP,  NO_CONSUME) ||              
 	    match(TOKEN_RBRA,   NO_CONSUME) ||
-	    match(TOKEN_COMPOP, NO_CONSUME))
+	    match(TOKEN_COMPOP, NO_CONSUME)){
+	freeFacTail(factln);
 	return NULL;
-    
+    }
+
+    freeFacTail(factln);
     return error;
 }
 
@@ -290,7 +316,7 @@ static fac_tail_node *factor_tail(void){
  * in the list.
  */
 static token *match(token_type tt, consumption_type ct){
-    token *t;
+    token *t = error;
 
     if(global_tlist->value->type == tt){
 

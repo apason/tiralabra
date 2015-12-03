@@ -1,7 +1,7 @@
 CC=	gcc
 STD=	_GNU_SOURCE_
 OBJS=	main.o lex.o parser.o semantics.o memory.o
-CFLAGS=	-Wall -D$(STD) -c -Werror
+CFLAGS=	-Wall -D$(STD) -c -Werror -g
 TARGET= ../target/
 
 .c.o:

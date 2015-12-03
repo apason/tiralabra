@@ -6,7 +6,9 @@
 #include "tree.h"
 #include "lex.h"
 #include "label.h"
+#include "memory.h"
 
+static void *error;
 
 /*
  * LEXICAL ANALYSIS ---------------------------------------------------------
@@ -15,7 +17,7 @@
  */
 token *newToken(token_type type, char *value){
     token *t = (token *)malloc(sizeof(token));
-    
+
     t->type = type;
     strncpy(t->value, value, TOKEN_MAX_LENGTH +1);
 
@@ -34,6 +36,21 @@ token_list *newTokenList(void){
     return tl;
 }
 
+/*
+ * deletes the token list structure. note that actual tokens
+ * are not deleted but they are not lost either. in parse()
+ * funciton tokens are linked to the syntax tree and is deleted
+ * after code generation
+ */
+void freeTokenList(token_list *tl){
+    token_list *tmp;
+    
+    while(tl != NULL){
+	tmp = tl->next;
+	free(tl);
+	tl = tmp;
+    }
+}
 
 /*
  * this function creates and adds new token to the end of
@@ -246,4 +263,154 @@ label_list *newLabelListNode(label_list **list, label *l, label_type lt){
     new->next = *list; //head of the label list
 
     return new;
+}
+
+void freeLabelList(label_list *ll){
+    label_list *tmp;
+
+    while(ll != NULL){
+	tmp = ll->next;
+	free(ll);
+	ll = tmp;
+    }
+}
+
+void freeSyntaxTree(program_node *pn, void *err){
+    if(err != NULL)
+	error = err;
+    if(pn == NULL) return;
+    freeProgram(pn);
+}
+void freeProgram   (program_node *pn){
+    if(pn == NULL || pn == error) return;
+
+    free(pn->eof);
+    freeStmtLst(pn->sln);
+    free(pn);
+}
+void freeStmtLst   (stmt_lst_node *stmtln){
+    if(stmtln == NULL || stmtln == error) return;
+
+    freeStmt(stmtln->stmtn);
+    freeStmtLst(stmtln->sln);
+    free(stmtln);
+}
+void freeStmt      (stmt_node *stmtn){
+    if(stmtn == NULL || stmtn == error) return;
+
+    freeIf(stmtn->ifn);
+    freeWhile(stmtn->whilen);
+    freeFor(stmtn->forn);
+    freeDec(stmtn->decn);
+    freeAss(stmtn->assn);
+    free(stmtn);
+}
+
+void freeIf        (if_node *ifn){
+    if(ifn == NULL || ifn == error) return;
+
+    free(ifn->ifKey);
+    free(ifn->lbra);
+    freeComp(ifn->compn);
+    free(ifn->rbra);
+    freeStmt(ifn->stmtn);
+    free(ifn);
+}
+void freeWhile     (while_node *whilen){
+    if(whilen == NULL || whilen == error) return;
+
+    free(whilen->whileKey);
+    free(whilen->lbra);
+    freeComp(whilen->compn);
+    free(whilen->rbra);
+    freeStmt(whilen->stmtn);
+    free(whilen);
+}
+    
+void freeFor       (for_node *forn){
+    if(forn == NULL || forn == error) return;
+
+    free(forn->forKey);
+    free(forn->lbra);
+    freeAss(forn->assn);
+    freeComp(forn->compn);
+    free(forn->scol);
+    free(forn->id);
+    free(forn->assOp);
+    freeExp(forn->expn);
+    free(forn->rbra);
+    freeStmt(forn->stmtn);
+    free(forn);
+}
+    
+void freeComp      (comp_node *compn){
+    if(compn == NULL || compn == error) return;
+
+    freeExp(compn->expn);
+    free(compn->compOp);
+    freeExp(compn->expn2);
+    free(compn);
+}
+
+void freeDec       (dec_node *decn){
+    if(decn == NULL || decn == error) return;
+
+    free(decn->typeKey);
+    free(decn->id);
+    free(decn->scol);
+    free(decn);
+}
+
+void freeAss       (ass_node *assn){
+    if(assn == NULL || assn == error) return;
+
+    free(assn->id);
+    free(assn->assOp);
+    freeExp(assn->expn);
+    free(assn->scol);
+    free(assn);
+}
+
+void freeExp       (exp_node *expn){
+    if(expn == NULL || expn == error) return;
+
+    freeTerm(expn->termn);
+    freeTermTail(expn->termtln);
+    free(expn);
+}
+
+void freeTerm      (term_node *termn){
+    if(termn == NULL || termn == error) return;
+
+    freeFac(termn->facn);
+    freeFacTail(termn->factln);
+    free(termn);
+}
+
+void freeTermTail  (term_tail_node *termtln){
+    if(termtln == NULL || termtln == error) return;
+
+    free(termtln->addOp);
+    freeTerm(termtln->termn);
+    freeTermTail(termtln->termtln);
+    free(termtln);
+}
+
+void freeFac       (fac_node *facn){
+    if(facn == NULL || facn == error) return;
+
+    free(facn->lbra);
+    freeExp(facn->expn);
+    free(facn->rbra);
+    free(facn->id);
+    free(facn->lit);
+    free(facn);
+}
+void freeFacTail   (fac_tail_node *factln){
+    if(factln == NULL || factln == error) return;
+
+    free(factln->mulOp);
+    freeFac(factln->facn);
+    freeFacTail(factln->factln);
+    free(factln);
 }

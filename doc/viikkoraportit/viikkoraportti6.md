@@ -20,3 +20,12 @@ Käyttöohje on nyt kutakuinkin valmis. Ainakin niin pitkällä että tämän vi
 pystyy ohjelmaa testaamaan ja tutkimaan. Lisäksi toteutus- ja testausdokumenttejä on päivitetty
 sisältämään asiat koodin generoinnin ja semanttisen analyysin osalta.
 
+Huomasin että testeissä suoritettiin vahingossa kaksi kertaa parserin testit eikä kertaakaan
+semantiikan testejä. Korjasin asian ja testeissä oli vielä muutama virhe. Nyt ne on korjattu
+ja kaikki testis menevät läpi.
+
+Koodasin myös muistinvapautukset ohjelmaan vaikkei se kovin oleellista ollutkaan vapautetaanko
+muisti manuaalisesti ennen lopettamista vai käyttöjärjestelmän toimesta sen jälkeen.
+Ajoin myös ohjelman muutamalla testisyötteellä valgrindin läpi eikä muistivuotoja ollut havaittavissa.
+Tämä kuitenkin vain jos syntaksi ja semantiikka oli oikein. Virheellisillä syötteillä ei muistia
+vielä vapauteta kunnolla.

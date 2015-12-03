@@ -113,7 +113,8 @@ Tähän tulee ehkä muutos jossain vaiheessa.
 
 Testien toiminnan ymmärtämiseksi kannattaa myös lukea testiskriptit ja niiden kommentit.
 
-
+Suoritin myös valgrindin mem-leak testin ohjelmalle. Tällä hetkellä onnistunut suoritus
+ei aiheuta miknäänlaista mahdollisuutta muistivuotoihin.
 
 
 

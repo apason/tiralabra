@@ -1,2 +1,2 @@
 int j;
-if(j==3) int i;
+if(k==3) int i;
