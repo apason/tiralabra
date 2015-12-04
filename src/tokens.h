@@ -3,21 +3,24 @@
 
 #include <stdio.h>
 
-#define TOKEN_ASSOP      0
-#define TOKEN_IDENTIFIER 1
-#define TOKEN_LITERAL    2
-#define TOKEN_TYPEKEY    3
-#define TOKEN_IFKEY      4
-#define TOKEN_FORKEY     5
-#define TOKEN_COMPOP     6
-#define TOKEN_MULOP      7
-#define TOKEN_LBRA       8
-#define TOKEN_RBRA       9
-#define TOKEN_ADDOP      11
-#define TOKEN_ERROR      12
-#define TOKEN_SCOL       13
-#define TOKEN_EOF        14
-#define TOKEN_WHILEKEY   15
+#define TOKEN_ASSOP        0
+#define TOKEN_IDENTIFIER   1
+#define TOKEN_LITERAL      2
+#define TOKEN_TYPEKEY      3
+#define TOKEN_IFKEY        4
+#define TOKEN_FORKEY       5
+#define TOKEN_COMPOP       6
+#define TOKEN_MULOP        7
+#define TOKEN_LBRA         8
+#define TOKEN_RBRA         9
+#define TOKEN_ADDOP       11
+#define TOKEN_ERROR       12
+#define TOKEN_SCOL        13
+#define TOKEN_EOF         14
+#define TOKEN_WHILEKEY    15
+#define TOKEN_INSTRUCTION 16
+#define TOKEN_LCUR        17
+#define TOKEN_RCUR        18
 
 #define TOKEN_MAX_LENGTH 32
 
@@ -47,6 +50,7 @@ typedef struct TOKEN_LIST{
  * this is mainly for debugging. final version will probably
  * not print the token list.
  */
-extern void printTokenList(token_list *list);
+extern void printTokenList   (token_list *list);
+extern int  correctTokenList (token_list *list);
 
 #endif

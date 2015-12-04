@@ -99,11 +99,20 @@ static int statementList(stmt_lst_node *sln){
 }
 
 static int statement(stmt_node *stmtn){
-    return if_(stmtn->ifn)       &&
+    if( if_(stmtn->ifn)          &&
 	while_(stmtn->whilen)    &&
 	for_(stmtn->forn)        &&
 	declaration(stmtn->decn) &&
-	assignment(stmtn->assn);
+	statementList(stmtn->sln)&&
+	assignment(stmtn->assn)){
+
+	if(stmtn->ins != NULL)
+	    fprintf(output, "%s\n", stmtn->ins->value);
+
+	return 1;
+    }
+    
+    return 0;
 }
 
 static int if_(if_node *ifn){
@@ -169,10 +178,9 @@ static int for_(for_node *forn){
 
     if(statement(forn->stmtn) == 0) return 0;
     
-    if((global_type = findLabelType(forn->id)) == 0){
-	fprintf(stderr, "ERROR: undefined variable %s\n", forn->id->value);
+    if((global_type = findLabelType(forn->id)) == 0)
 	return 0;
-    }
+
 
     if(expression(forn->expn) == 0) return 0;
 

@@ -139,6 +139,31 @@ silti samana, joten tämä ratkaisu ei merkittävästi hidasta ohjelman suoritus
 Koodin generointi on kuitenkin tethty samaan yhteyteen semantiikan tarkistuksen kanssa.
 
 ##puutteet ja parannusehdotukset##
+
+###literaalialueen puuttuminen###
+Vaikka ttk-15 arkkitehtuuri käsittelee lukuja 32 bittisinä, ei c:kääntäjä kuitenkaan kykene kuin 16 bitin
+tarkkuuteen. Luvut voivat kyllä kasvaa yli 16 bittisiksi, mutta muuttujia ei voi alustaa kuin 16 bitin
+tarkkuudella. Myöskään literaalit jotka vievät yli 16 bittiä eivät ole sallittuja. Tämä johtuu siitä, että
+kääntäjä ei luo minkäänlaista literaalialuetta, eikä muuttujia voida alustaa niiden esittelyn yhteydessä.
+
+Esimerkiksi jos muuttuja x esitellään ja alustetaan arvoon 10 seuraavilla käskyillä: int x; x = 10;
+on tuotettu konekoodi seuraavan lainen:
+ * x dc 0
+ * nop
+ * load r3, =10
+ * push sp, r3
+ * pop sp, r3
+ * store r3, =x
+
+Tästä nähdään selvästi että sijoituslause x = 10; tuottama koodi käyttää lukua 10 suoraan konekäskyn
+osoiteosassa. Koska osoiteosa on vain 16 bittiä, ei tätä suurempia lukuja ole mahdollista käyttää.
+Tämän projektin kääntäjä ei kuitenkaan tarkista literaalien kokoja joten liian suurella/pienellä
+luvulla operoitaessa ei aiheudu virheilmoitusta. Toisalta ttk-15 projektin kääntäjä kyllä valittaa
+liian suurista osoitekentän arvoista.
+
+Tämän ongelman voisi ratkaista tekemällä tarkistukset kaikille literaaleille ja binääriesityksen ollessa
+yli 16 bittiä tallentamalla ko, literaalin erilliseen muistipaikkaan ja viittaamalla lukuun sitä kautta.
+
 ###tulostus###
 Koska toteutetussa ohjelmointikielessä ei ole minkäänlaista mahdollisuutta kirjoittaa suoraan
 konekoodia eikä mitään OUT tms komentoa ole, ei käännetyillä ohjelmilla oikeastaan voi sellaisenaan

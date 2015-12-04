@@ -13,6 +13,9 @@ int main(int argc, char *argv[]){
     if(input == NULL) return -1;
     token_list *tl = lex(input);
     fclose(input);
+    printTokenList(tl);
+    if(correctTokenList(tl) != 1)
+	return 0;
     if(tl == NULL){
 	fprintf(stderr, "scanning error\n");
 	fflush(NULL);
@@ -29,8 +32,5 @@ int main(int argc, char *argv[]){
 	return tmp;
     }
 
-
-    fprintf(stderr, "parse error\n");
-    fflush(NULL);
     return 0;
 }

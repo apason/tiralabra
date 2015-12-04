@@ -83,6 +83,7 @@ static program_node *program(void){
 	}
     }
 
+    fprintf(stderr, "error: unexpected token %s\n", global_tlist->value->value);
     freeProgram(pn);
     return NULL;   
 }
@@ -95,12 +96,15 @@ static stmt_lst_node *statement_list(void){
        match(TOKEN_FORKEY,     NO_CONSUME) ||
        match(TOKEN_TYPEKEY,    NO_CONSUME) ||
        match(TOKEN_SCOL,       NO_CONSUME) ||
+       match(TOKEN_LCUR,       NO_CONSUME) ||
+       match(TOKEN_INSTRUCTION,NO_CONSUME) ||
        match(TOKEN_IDENTIFIER, NO_CONSUME)){
 	if((sln->stmtn = statement()) != NULL)
 	    if((sln->sln = statement_list()) != error)
 		return sln;
     }
-    else if(match(TOKEN_EOF, NO_CONSUME)){
+    else if(match(TOKEN_EOF, NO_CONSUME)   ||
+	    match(TOKEN_RCUR,NO_CONSUME)){
 	freeStmtLst(sln);
 	return NULL;
     }
@@ -129,9 +133,18 @@ static stmt_node *statement(void){
 	if((stmtn->whilen = while_()) != NULL)
 	    return stmtn;
     }
-    else if(match(TOKEN_FORKEY,  NO_CONSUME))
+    else if(match(TOKEN_FORKEY,  NO_CONSUME)){
 	if((stmtn->forn = for_()) != NULL)
 	    return stmtn;
+    }
+    else if((stmtn->lCur = match(TOKEN_LCUR, CONSUME)) != NULL){
+	if((stmtn->sln = statement_list()) != error)
+	    if((stmtn->rCur = match(TOKEN_RCUR, CONSUME)) != NULL)
+		return stmtn;
+    }
+    else if((stmtn->ins = match(TOKEN_INSTRUCTION, CONSUME)) != NULL)
+	return stmtn;
+
 
     freeStmt(stmtn);
     return NULL;

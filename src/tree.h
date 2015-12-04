@@ -50,6 +50,10 @@ struct STMT_NODE{
      for_node            *forn;
      dec_node            *decn;
      ass_node            *assn;
+    token                *ins;
+    token                *lCur;
+    stmt_lst_node        *sln;
+    token                *rCur;
     
 };
 

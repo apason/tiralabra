@@ -80,7 +80,10 @@ token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input)
        type == TOKEN_ADDOP                         ||
        type == TOKEN_LBRA                          ||
        type == TOKEN_RBRA                          ||
+       type == TOKEN_LCUR                          ||
+       type == TOKEN_RCUR                          ||       
        type == TOKEN_SCOL                          ||
+       type == TOKEN_INSTRUCTION                   ||
        
        strncmp(buffer, "*", TOKEN_MAX_LENGTH) == 0)
 	;
@@ -125,6 +128,10 @@ stmt_node *newStmtNode(void){
     r->whilen = NULL;
     r->assn   = NULL;
     r->decn   = NULL;
+    r->ins    = NULL;
+    r->lCur   = NULL;
+    r->sln    = NULL;
+    r->rCur   = NULL;
 
     return r;
 }
@@ -303,6 +310,10 @@ void freeStmt      (stmt_node *stmtn){
     freeFor(stmtn->forn);
     freeDec(stmtn->decn);
     freeAss(stmtn->assn);
+    free(stmtn->ins);
+    free(stmtn->lCur);
+    freeStmtLst(stmtn->sln);
+    free(stmtn->rCur);
     free(stmtn);
 }
 

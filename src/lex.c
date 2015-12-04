@@ -7,12 +7,13 @@
 #include "tokens.h"
 #include "memory.h"
 
-static token_list *handleOthers  (token_list *tl, char *buffer, FILE *input);
-static token_list *handleLiterals(token_list *tl, char *buffer, FILE *input);
-static token_list *handleComps   (token_list *tl, char *buffer, FILE *input);
-static token_list *handleSlash   (token_list *tl, char *buffer, FILE *input);
-static token_list *handleErrors  (token_list *tl, char *buffer, FILE *input);
-static token_list *handleNO      (token_list *tl, char *buffer, FILE *input);
+static token_list *handleOthers     (token_list *tl, char *buffer, FILE *input);
+static token_list *handleLiterals   (token_list *tl, char *buffer, FILE *input);
+static token_list *handleComps      (token_list *tl, char *buffer, FILE *input);
+static token_list *handleSlash      (token_list *tl, char *buffer, FILE *input);
+static token_list *handleErrors     (token_list *tl, char *buffer, FILE *input);
+static token_list *handleNO         (token_list *tl, char *buffer, FILE *input);
+static token_list *handleInstruction(token_list *tl, char *buffer, FILE *input);
     
 
 static int        isTypeKey      (char *word);
@@ -50,11 +51,11 @@ token_list *lex(FILE *input){
     while(fread(&c, sizeof(char), 1, input) == sizeof(char)){
 
 	memset(buffer, '\0', TOKEN_MAX_LENGTH +1);
-
+	
 	switch (c){
 	    
 	    /*
-	     * this and next 4 groups are the only groups of items that can
+	     * this and next 6 groups are the only groups of items that can
 	     * be returned directly after founding. there is no need to read next
 	     * characters and thus no need to ungetc it.
 	     */
@@ -80,11 +81,25 @@ token_list *lex(FILE *input){
 	    tl = addToken(tl, TOKEN_RBRA, buffer, input);
 	    break;
 
+	case '{':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_LCUR, buffer, input);
+	    break;
+
+	case '}':
+	    buffer[0] = c;
+	    tl = addToken(tl, TOKEN_RCUR, buffer, input);
+	    break;
+
 	case ';':
 	    buffer[0] = c;
 	    tl = addToken(tl, TOKEN_SCOL, buffer, input);
 	    break;
 
+
+	case '$':
+	    tl = handleInstruction(tl, buffer, input);
+	    break;
 
 	    /*
 	     * lets handle out 3 possibilities with handleSlash()
@@ -134,8 +149,10 @@ token_list *lex(FILE *input){
 	    /*
 	     * everything else is error
 	     */
-	    else
+	    else{
+		ungetc(input);
 		tl = handleErrors(tl, buffer, input);
+	    }
 
 	    break;
 	}
@@ -199,6 +216,19 @@ static token_list *handleSlash(token_list *tl, char *buffer, FILE *input){
     return NULL;
 }
 
+static token_list *handleInstruction(token_list *tl, char *buffer, FILE *input){
+    char c;
+    int i = 0;
+
+    while((c = fgetc(input)) && i < TOKEN_MAX_LENGTH){
+	if(c == EOF || c == '\n')
+	    return addToken(tl, TOKEN_INSTRUCTION, buffer, input);
+	buffer[i++] = c;
+    }
+
+    fprintf(stderr, "warning: ASM line is over %d characters\n", TOKEN_MAX_LENGTH);
+    return addToken(tl, TOKEN_INSTRUCTION, buffer, input);
+}
 
 /*
  * here we have operator types that cannot be returned only
@@ -340,17 +370,18 @@ static token_list *handleLiterals(token_list *tl, char *buffer, FILE *input){
 static token_list *handleErrors(token_list *tl, char *buffer, FILE *input){
     int  i;
     char c;
-    
-    for(i = 0; i < TOKEN_MAX_LENGTH; i++){
-	buffer[i] = c;
 
-	if(fread(&c, sizeof(char), 1, input) != sizeof(char))
+    for(i = 0; i <= TOKEN_MAX_LENGTH; i++){
+
+  	if(fread(&c, sizeof(char), 1, input) != sizeof(char))
 	    break;
 
 	if(c == ' ' || c == '\n' || c == '\t')
 	    break;
+
+	buffer[i] = c;
     }
-    
+
     return addToken(tl, TOKEN_ERROR, buffer, input);
 }
 
@@ -410,10 +441,20 @@ static void addEOF(token_list *tl){
  * no return value
  */
 void printTokenList(token_list *list){
-    for(; list; list = list->next){
+    for(; list; list = list->next)
 	printf("%s\t%d\n", list->value->value, list->value->type);
-	fflush(NULL);
-    }
+}
 
+
+int correctTokenList(token_list *list){
+    int ret = 1;
+    
+    for(; list; list = list->next)
+	if(list->value->type == TOKEN_ERROR){
+	    fprintf(stderr, "error: invalid character sequence %s\n", list->value->value);
+	    ret = 0;
+	}
+    
+    return ret;
 }
 

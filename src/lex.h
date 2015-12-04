@@ -12,6 +12,6 @@
 /*
  * the main function of lexical analyzer
  */
-extern token_list *lex(FILE *input);
+extern token_list *lex             (FILE *input);
     
 #endif
