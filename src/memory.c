@@ -15,11 +15,12 @@ static void *error;
  * return new token initialized by parameters.
  * this function expects that type and value are correct!
  */
-token *newToken(token_type type, char *value){
+token *newToken(token_type type, char *value, int line_number){
     token *t = (token *)malloc(sizeof(token));
 
     t->type = type;
     strncpy(t->value, value, TOKEN_MAX_LENGTH +1);
+    t->line_number = line_number;
 
     return t;
 }
@@ -64,9 +65,9 @@ void freeTokenList(token_list *tl){
  *
  * pointer to new node is returned
  */
-token_list *addToken(token_list *tl, token_type type, char *buffer, FILE *input){
+token_list *addToken(token_list *tl, token_type type, char *buffer, int line, FILE *input){
     tl->next  = (token_list *)malloc(sizeof(token_list));
-    tl->value = newToken(type, buffer);
+    tl->value = newToken(type, buffer, line);
     tl        = tl->next;
     tl->next  = NULL;
     tl->value = NULL;

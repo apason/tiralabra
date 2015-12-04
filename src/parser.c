@@ -83,7 +83,7 @@ static program_node *program(void){
 	}
     }
 
-    fprintf(stderr, "error: unexpected token %s\n", global_tlist->value->value);
+    fprintf(stderr, "error on line %d: Unexpected token %s\n", global_tlist->value->line_number, global_tlist->value->value);
     freeProgram(pn);
     return NULL;   
 }

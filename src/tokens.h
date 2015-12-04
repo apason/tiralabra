@@ -35,6 +35,7 @@ typedef char token_value[TOKEN_MAX_LENGTH +1];
 typedef struct{
     token_type  type;
     token_value value;
+    int         line_number;
 } token;
 
 /*

@@ -336,7 +336,7 @@ static int factor(fac_node *facn){
 
 	else{
 	    if(global_type != findLabelType(facn->id)){
-		fprintf(stderr, "Error: Mixing int and float types id\n");
+		fprintf(stderr, "error on line %d: Mixing int and float types\n", facn->id->line_number);
 	       return 0;
 	    }
 	    else{
@@ -360,7 +360,7 @@ static int factor(fac_node *facn){
 	}
 	else{
 	    if(global_type != findLiteralType(facn->lit)){
-		fprintf(stderr, "Error: Mixing int and float types. expected value: %d\n", global_type);
+		fprintf(stderr, "error on line %d: Mixing int and float types.", facn->lit->line_number);
 		return 0;
 	    }
 	    else{
@@ -400,7 +400,7 @@ static int insert(token *id, label_type lt){
 	if(strncmp((char*)tmp->l, id->value, TOKEN_MAX_LENGTH +1) == 0){
 	    prev->next = tmp->next;
 	    free(tmp);
-	    fprintf(stderr, "duplicate definition of variable %s\n", id->value);
+	    fprintf(stderr, "error on line %d: Duplicate definition of variable %s\n", id->line_number, id->value);
 	    return 0;
 	}
     
@@ -418,7 +418,7 @@ static int findLabelType(token *id){
 	if(strncmp(id->value, (char*)tmp->l, TOKEN_MAX_LENGTH +1) == 0)
 	    return tmp->lt;
 
-    fprintf(stderr, "undefined variable %s\n", id->value);
+    fprintf(stderr, "error on line %d: Undefined variable %s\n", id->line_number, id->value);
     return UNDEF;
 }
 

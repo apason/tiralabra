@@ -10,8 +10,8 @@
 
 // LEXICAL ANALYSIS ---------------------------------------------
 
-token_list *addToken      (token_list *tl, token_type type, char *buffer, FILE *input);
-token      *newToken      (token_type type, char *value);
+token_list *addToken      (token_list *tl, token_type type, char *buffer, int line, FILE *input);
+token      *newToken      (token_type type, char *value, int line_number);
 token_list *newTokenList  (void);
 void        freeTokenList (token_list *tl);
 
