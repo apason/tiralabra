@@ -1,0 +1,106 @@
+/*
+ * ohjelma lukee syötteenä 3 liukulukua ja 
+ * tulostaa näiden keskiarvon
+ */
+ 
+/*
+ * muuttujien määrittelyt
+ */
+float avg;
+float sum;
+float tmp;
+int i;
+
+sum = 0.0;
+
+/*
+ * luetaan 3 liukulukua ja lasketaan summa
+ */
+for(i = 0; i < 3; i = i+1){
+	$fin r1, =KBD
+	$store r1, =tmp
+	sum = sum + tmp;
+}
+
+/*
+ * lasketaan keskiarvo
+ */
+avg = sum / 3.0;
+
+/*
+ * tulostetaan assemblykomennoilla
+ */
+ 
+$load r1, avg
+$fout r1, =CRT
+
+//--------------------------------------------------------------------
+
+;käännös tuottaa seuraavan konekoodin
+
+avg dc 0
+nop
+sum dc 0
+nop
+tmp dc 0
+nop
+i dc 0
+nop
+fload r3, =0.0
+push sp, r3
+pop sp, r3
+store r3, =sum
+load r3, =0
+push sp, r3
+pop sp, r3
+store r3, =i
+_for5_beginning nop
+push sp, i
+load r3, =3
+push sp, r3
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jles =_comp0_true
+jump =_comp0_end
+_comp0_true load r0, =1
+_comp0_end nop
+jzer r0, =_for5_end
+fin r1, =KBD
+store r1, =tmp
+push sp, sum
+push sp, tmp
+pop sp, r2
+pop sp, r1
+fadd r1, r2
+push sp, r1
+pop sp, r3
+store r3, =sum
+push sp, i
+load r3, =1
+push sp, r3
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =i
+jump =_for5_beginning
+_for5_end nop
+push sp, sum
+fload r3, =3.0
+push sp, r3
+pop sp, r2
+pop sp, r1
+fdiv r1, r2
+push sp, r1
+pop sp, r3
+store r3, =avg
+load r1, avg
+fout r1, =CRT
+svc sp, =HALT
+
+; esimerkki suoritus 
+apa@jalla ~/ttk-15/target $ echo "3.3 6.6 0.1" | ./ttk-15 a.out.b15 
+3.33333 

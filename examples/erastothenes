@@ -1,0 +1,184 @@
+/*
+ * ohjelma laskee alkulukuja erastothesen
+ * seula nimisellä algoritmilla
+ */
+
+int i;
+int j;
+int n;
+int t;
+
+$in r1, =kbd
+$store r1, =n
+//tämä taulukko määrää kuinka monta lukua voidaan laskea
+$table ds 30000
+$load fp, =1
+
+for (i = 2; i <= n; i = i+1) {
+	$load r5, i
+	$load r4, table(r5)
+	$store r4, =t
+	if (t == 1) {
+		$jump =label
+	}
+	for (j = i*i; j <= n; j = j+i) {
+		$load r3, j
+		$store fp, =table(r3)
+	}
+	$label nop
+}
+
+for (i = 2; i <= n; i = i+1) {
+	$load fp, i
+	$load r3, table(fp)
+	$store r3, =t
+	if (t == 0) {
+		$out fp, =crt
+	}
+}
+
+//------------------------------------------------------------
+
+; saadaan seuraava konekoodi
+
+i dc 0
+nop
+j dc 0
+nop
+n dc 0
+nop
+t dc 0
+nop
+in r1, =kbd
+store r1, =n
+table ds 100000
+load fp, =1
+load r3, =2
+push sp, r3
+pop sp, r3
+store r3, =i
+_for8_beginning nop
+push sp, i
+push sp, n
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jngre =_comp0_true
+jump =_comp0_end
+_comp0_true load r0, =1
+_comp0_end nop
+jzer r0, =_for8_end
+load r5, i
+load r4, table(r5)
+store r4, =t
+push sp, t
+load r3, =1
+push sp, r3
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jequ =_comp1_true
+jump =_comp1_end
+_comp1_true load r0, =1
+_comp1_end nop
+jzer r0, =_if13_end
+jump =label
+_if13_end nop
+push sp, i
+push sp, i
+pop sp, r2
+pop sp, r1
+mul r1, r2
+push sp, r1
+pop sp, r3
+store r3, =j
+_for16_beginning nop
+push sp, j
+push sp, n
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jngre =_comp2_true
+jump =_comp2_end
+_comp2_true load r0, =1
+_comp2_end nop
+jzer r0, =_for16_end
+load r3, j
+store fp, =table(r3)
+push sp, j
+push sp, i
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =j
+jump =_for16_beginning
+_for16_end nop
+label nop
+push sp, i
+load r3, =1
+push sp, r3
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =i
+jump =_for8_beginning
+_for8_end nop
+load r3, =2
+push sp, r3
+pop sp, r3
+store r3, =i
+_for21_beginning nop
+push sp, i
+push sp, n
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jngre =_comp3_true
+jump =_comp3_end
+_comp3_true load r0, =1
+_comp3_end nop
+jzer r0, =_for21_end
+load fp, i
+load r3, table(fp)
+store r3, =t
+push sp, t
+load r3, =0
+push sp, r3
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jequ =_comp4_true
+jump =_comp4_end
+_comp4_true load r0, =1
+_comp4_end nop
+jzer r0, =_if26_end
+out fp, =crt
+_if26_end nop
+push sp, i
+load r3, =1
+push sp, r3
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =i
+jump =_for21_beginning
+_for21_end nop
+svc sp, =HALT
+
+; esimerkkitulostus
+
+
+apa@jalla ~/ttk-15/target $ ./ttk-15 a.out.b15 -M 31000
+10
+2       3       5       7       
