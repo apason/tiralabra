@@ -1,0 +1,140 @@
+/*
+ * "c" ohjelma pyytää käyttäjältä syötteenä kokonaisluvun ja 
+ * laskee fibonaccin sarjan tähän lukuun asti tulostaen
+ * kaikki tulokset välillä [0, n]
+ */
+ 
+int i;
+int j;
+int k;
+int t;
+int n;
+int h;
+
+/*
+ * tällä käytetty $<assembly> notaatiota, jolloin
+ * kääntäjä siirtää $ merkin jälkeisen loppurivin
+ * kooditiedostoon sellaisenaan
+ *
+ * syötteen luku ja tulostus pitää siis hoitaa tällä
+ * tavalla koska funktioita ei ole implementoitu
+ */
+$in r1, =KBD
+$store r1, =n
+
+for(h = 0; h <= n; h = h+ 1){
+	i = 0;
+	j = 1;
+	for(k = 1; k <= h; k = k+1){
+		t = i+j;
+		i = j;
+		j = t;
+	}
+	$load r1, j
+	$out r1, =CRT
+}
+// Ohjelma päättyy ----------------------------------------------------------------------------------------
+
+; tulokseksi kääntäjä antaa seuraavanlaisen
+; konekielisen ohjelman joka voidaan kääntää
+; ttk-15 objektimoduuliksi ja binääriksi
+
+i dc 0
+nop
+j dc 0
+nop
+k dc 0
+nop
+t dc 0
+nop
+n dc 0
+nop
+h dc 0
+nop
+in r1, =KBD
+store r1, =n
+load r3, =0
+push sp, r3
+pop sp, r3
+store r3, =h
+_for8_beginning nop
+push sp, h
+push sp, n
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jngre =_comp0_true
+jump =_comp0_end
+_comp0_true load r0, =1
+_comp0_end nop
+jzer r0, =_for8_end
+load r3, =0
+push sp, r3
+pop sp, r3
+store r3, =i
+load r3, =1
+push sp, r3
+pop sp, r3
+store r3, =j
+load r3, =1
+push sp, r3
+pop sp, r3
+store r3, =k
+_for12_beginning nop
+push sp, k
+push sp, h
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jngre =_comp1_true
+jump =_comp1_end
+_comp1_true load r0, =1
+_comp1_end nop
+jzer r0, =_for12_end
+push sp, i
+push sp, j
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =t
+push sp, j
+pop sp, r3
+store r3, =i
+push sp, t
+pop sp, r3
+store r3, =j
+push sp, k
+load r3, =1
+push sp, r3
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =k
+jump =_for12_beginning
+_for12_end nop
+load r1, j
+out r1, =CRT
+push sp, h
+load r3, =1
+push sp, r3
+pop sp, r2
+pop sp, r1
+add r1, r2
+push sp, r1
+pop sp, r3
+store r3, =h
+jump =_for8_beginning
+_for8_end nop
+svc sp, =HALT
+
+; kun tämä ohjelma ajetaan ttk-15 laitteella syötteellä 11 saadaan tulostukseksi seuraava;
+
+1       1       2       3       5       8       13      21      34      55      89      144 
+
+eli fibonaccin lukujonon 12 ensimmäistä lukua.

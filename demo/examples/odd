@@ -1,0 +1,61 @@
+/*
+ * ohjelma lukee käyttäjältä kokonaislukusyötteen
+ * ja tulostaa 1 jos syöte on parillinen,
+ * muuten tulostetaan 0
+ */
+int n;
+
+$in r1, =KBD
+$store r1, =n
+
+if ((n/2)*2 == n){
+	$load r1, =1
+	$jump =end
+}
+$load r1, =0
+$end out r1, =CRT
+
+//---------------------------------------------
+
+;ohjelman kääntäminen tuottaa seuraavanlaisen konekoodin
+
+n dc 0
+nop
+in r1, =KBD
+store r1, =n
+push sp, n
+load r3, =2
+push sp, r3
+pop sp, r2
+pop sp, r1
+div r1, r2
+push sp, r1
+load r3, =2
+push sp, r3
+pop sp, r2
+pop sp, r1
+mul r1, r2
+push sp, r1
+push sp, n
+load r0, =0
+pop sp, r2
+pop sp, r1
+comp r1, r2
+jequ =_comp0_true
+jump =_comp0_end
+_comp0_true load r0, =1
+_comp0_end nop
+jzer r0, =_if3_end
+load r1, =1
+jump =end
+_if3_end nop
+load r1, =0
+end out r1, =CRT
+svc sp, =HALT
+
+; esimerkkisuoritus
+
+apa@jalla ~/ttk-15/target $ ./ttk-15 a.out.b15 
+255
+0      
+
