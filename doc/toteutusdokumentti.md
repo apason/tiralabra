@@ -164,30 +164,23 @@ liian suurista osoitekentän arvoista.
 Tämän ongelman voisi ratkaista tekemällä tarkistukset kaikille literaaleille ja binääriesityksen ollessa
 yli 16 bittiä tallentamalla ko, literaalin erilliseen muistipaikkaan ja viittaamalla lukuun sitä kautta.
 
-###tulostus###
-Koska toteutetussa ohjelmointikielessä ei ole minkäänlaista mahdollisuutta kirjoittaa suoraan
-konekoodia eikä mitään OUT tms komentoa ole, ei käännetyillä ohjelmilla oikeastaan voi sellaisenaan
-tehdä yhtään mitään! Konekieleen perehtyneelle ohjelmoijalle ei kuitenkaan ole ongelma laskea haluamaansa
-lukua vaikkapa muuttujaan x ja kirjoittaa itse manuaalisesti käännetyn ohjelman loppuun
- * load r1, x
- * out r1, =CRT
+###tulostus ja syötteen luku###
+Koska kääntäjän yhteydessä ei ole minkäänlaista standardikirjastoa, ei pelkillä c-kielen ominaisuuksilla
+ole mahdollista lukea syötettä tai tulostaa mitään. Tämän asian korjaamiseksi kieleen on lisätty
+mahdollisuus inline assembly konekäskyille. $-merkillä alkavat rivit tulkitaan siis suoriksi konekäskyiksi
+ja $ merkin jälkeinen osa siirretään suoraan tuotettuun koodiin.
 
-jolloin ohjelma myös tulostaa lasketun arvon. (Tämä on siis toistaiseksi ainoa keino saada laskettuja
-arvoja tulostettua käyttäjälle ja tähän koodin generoinnin testauksetkin perustuvat)Tämä vaihe pitäisi kuitenkin jotenkin lisätä kääntäjään.
-Paras tapa olisi lisätä kieleen jonkin lainen /! ...konekoodia... !/ lohko jonka sisällä oleva konekoodi
-liitettäisi ohjelmaan sellaisenaan. Tällöin .c tiedostot voisi kääntää suoraan toimivaksi konekoodiksi.
-Toinen vaihtoehto olisi lisätä kieleen jonkinlainen OUT komento jolla sitten voisi tulostaa muuttujan arvon
-käyttäjälle käyttäen OUT konekäskyä. Tämä ei kuitenkaan ole hyvä idea, koska tällöin kieli ei enää
-käytännössä ole c kielen osajoukko. Myöskään esim funktiota printf tms ei voi toteuttaa, koska kieli ei
-tue funktioita. Tämä on ongelmallinen tilanne sillä kielen todella pitäisi pystyä jonkinlaiseen
-tulostukeen.. Itse pidän parhaana ratkaisuna juurikin jonkinlaista tukea konekielen kirjoittamiseksi
-suoraan .c tiedostoon.
+Tämän ominaisuuden avulla on helppo lukea syötettä ja tulostaa tietoja käyttäjälle. esim määriteltyyn
+muuttujaan x lukeminen näppäimistöltä saadaan seuraavalla koodilla:
 
-###syötteen luku###
-Kuten edellä tulostuksen kanssa, myös syötteen luvulla on sama ongelma. Toteutetulla kielellä käännetyt
-ohjelmat eivät siis voi olla millään tavalla interaktiivisia ilman pientä konekielellä viilausta.
-Syötteen lukemisen kannalta tämä on kuitenkin huomattavasti pienempi ongelma, sillä syötteen voi aina
-kovakoodata lähdekoodiin.
+$in r1, =KBD
+$store r1, =x
+
+Rajoitteena inline assemblyllä on kuitenkin se, että rivi ei saa olla yli 32 merkkiä pitkä ja jokainen
+konekäsky tulee laittaa omalle rivilleen.
+
+Vastaavasti tulostus tapahtuu load ja out konekäskyillä. ttk-15 konekäskyistä lisätietoa ko. projektin
+dokumentaatiossa github.com/apason/ttk-15
 
 ###muuttujien esittely###
 Määriteltyyn ohjelmointikieleen jäi pienimuotoinen moka jonka tajusin vasta loppusuoralla, joten se saa
