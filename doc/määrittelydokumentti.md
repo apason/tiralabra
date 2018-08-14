@@ -1,6 +1,6 @@
-#Määrittelydokumentti#
+# Määrittelydokumentti
 
-##ohjelman tarkoitus##
+## ohjelman tarkoitus
 Tarkoitus toteuttaa ohjelma joka suorittaa syntaksitarkastuksen eräälle c-kielen osajoukolle. Tämän kielen
 määritelmä löytyy tiedostosta "kielen_kuvaus.md". Jos aikaa jää kurssin lopussa, saatetaan kielen kuvausta
 hieman laajentaa. (edit. kielen kuvausta muutettu muutamaan kertaan kurssin edetessä)
@@ -22,7 +22,7 @@ kyseinen koodi eli oliko syntaksin mukainen. Jos oli, tulostetaan mahdollisesti 
 Jos aikaa jää saatetaan käännös suorittaa ttk-15 arkkitehtuurille (edit. koodin generointi tehty).
 
 
-##päivitys##
+## päivitys
 Koska syntaksitarkastus oli käytännössä valmis jo neljännellä viikolla, otin tavoitteeksi myös syntaksipuun
 rakentamisen eksplisiittisesti. Lisäksi suoritin semanttisen analyysin sekä koodin generoinnin.
 

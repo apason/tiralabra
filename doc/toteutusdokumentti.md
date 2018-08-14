@@ -1,6 +1,6 @@
-#toteutusdokumentti#
+# toteutusdokumentti
 
-##ohjelman rakenne##
+## ohjelman rakenne 
 Ohjelma koostuu kolmesta osasta: Leksikaalisesta, syntaktisesta ja semanttisesta analyysistä.
 Kaikki yksiköt ovat omissa .c tiedostoissa ja niillä on oma header tiedosto. Semanttsen
 analyysin yhteydessä suoritetaan koodin generointi, joten tälle ei ole omaa tiedostoa.
@@ -9,7 +9,7 @@ Julkisia funktioita on varsinaisesti vain kolme. Yksi jokaiselle .c tiedostolle.
 Lisäksi memory.c sisältää julkisia funktioita muistin käsitelyyn liittyen. Muilta osin
 funktiot ovat saattisia.
 
-###skanneri###
+### skanneri
 Leksikaalinen analyysi eli skanneri tuottaa yhteen suuntaan linkitetyn listan ns.
 tokeneita, jotka vastaavat kontekstittoman kielen terminaaleja. Tämä tapahtuu hieman
 samaan tapaan kuin säännöllisten lausekkeiden tunnistaminen. Poikkeuksena kuitenkin se,
@@ -22,7 +22,7 @@ on tyhjä luodaan silti yhden pituinen lista joka sisältää alkion TOKEN_EOF.
 Jos syöte on muuten virheellinen laitetaan listaan jokaista virheellistä sanaa kohti
 TOKEN_ERROR.
 
-###parseri###
+### parseri
 Syntaktinen analyysi eli parseaminen tapahtuu käymällä skannerin palauttama lista
 läpi. Parseri on niin sanottu recursive descen parser eli se käy token listan läpi
 muodostaen samalla syntaksipuuta juuresta lehtiin, vasemmalta
@@ -36,7 +36,7 @@ Jos on, siirtyy kontrolli seuraavalle funktiolle kieliopin sääntöjen mukaan, 
 lopetetaan ohjelman suoritus ja palautetaan NULL pääohjelmalle. Onnistuneessa
 suorituksessa palautetaan osoite syntaksipuun juureen.
 
-###semanttinen analyysi ja koodin generointi###
+### semanttinen analyysi ja koodin generointi
 Skannauksen ja parseamisen jälkeen suoritetaan vielä semanttinen analyysi.
 (kunhan edelliset vaiheet eivät aiheuttaneet virhettä.) semanttinen analyysi varmistaa,
 että ohjelma on mahdollista muuttaa konekieliseksi koodiksi. Tämä vaihe aiheuttaa
@@ -44,7 +44,7 @@ virheen jos käyttäjä yrittää käytää määrittelemätöntä muuttujaa, ta
 määritellä saman muuttujan useaan kertaan. Virhe aiheutuu myös jos yritetään operoida
 yhteen eri tyyppisiä muuttujia ja/tai literaaleja.
 
-####tyyppitarkastuksen suoritus####
+#### tyyppitarkastuksen suoritus
 Tyyppitarkastus suoritetaan globaalin
 (ja staattisen) muuttujan global_type avulla. Operaatio on melko helppo sillä tiedämme
 että tyyppi voi lähtökohtaisesti olla mitä tahansa (global_type = UNDEF). Tietyt
@@ -57,7 +57,7 @@ keskeytetään. Edellämainitun kaltaisesta puusta palattaessa global_type arvok
 taas UNDEF, jolloin seuraava muuttuja seuraavassa tarkastettavassa alipuussa muuttaa
 sen arvon taas oletetuksi.
 
-####kaksinkertainen määrittely ja määrittämättömyys####
+#### kaksinkertainen määrittely ja määrittämättömyys
 Määrittämätöntä muuttujaa ei voi käyttää eikä muuttujaa saa määritellä kahdesti. Tämä
 on tarkastettu pitämällä semanttisen analyysin edetessä kirjaa (linkitetty lista) kaikista
 vastaan tulleista muuttujista. Kun muuttuja tulee vastaan (eikä kyseessä ole muuttujan
@@ -65,7 +65,7 @@ määrittelly) tarkistetaan että se löytyy listalta. Jos ei löydy niin suorit
 ja virhe palautetaan. Samalla tavalla jokaisessa muuttujan määrittelyssä tarkastetaan
 että listalla ei ole kyseistä muuttujaa.
 
-####koodin generointi####
+#### koodin generointi
 Semanttisen analyysin yhteydessä suoritetaan myös koodin generointi. Jos semantiikassa
 on virhe myös generointi lopetetaan ja jo generoitu kooditiedosto tuhotaan. Koodi
 generoidaan käyttämällä tietynlaista templatea tietynlaiselle lauseelle. Esimerkiksi
@@ -97,7 +97,7 @@ jos ko. rekisterin arvo on 1. Tällä tavalla kooia muodostetaan rekursiiviseti 
 läpi käydessä. Selitys ei ehkä ollut paras mahdollinen vaikka toiminta onkin melko
 suoraviivaista. Paremmin toimnnan kuitenkin ymmärtää lukemalla tiedoston src/semantics.c
 
-###syntaksipuu###
+### syntaksipuu
 Syntaksipuu on rakenne, jossa jokaisella solmulla on linkit **kaikkiin mahdollisiin**
 lehtiin ja alipuihin mitä kyseisestä solmusta voi lähteä. Toisin sanoen solmun linkit
 vastaavat nonterminaalin predict joukkoa. Jokainen linkki on alustettu NULL pointteriksi
@@ -107,13 +107,13 @@ huomioimatta semantisessa analyysissä ja koodin generoinnissa.
 
 Syntaksipuun rakenne löytyy tiedostosta src/tree.h
 
-##aika- ja tilavaativuudet##
+## aika- ja tilavaativuudet
 Ohjelman aika ja tilavaativuus on lineaarinen suhteessa syötteen kokoon. Tässä on
 huomioitavaa että syötteen koolla tarkoitetaan nimenomaan lähdetiedostossa olevien
 tokenien eli kielen terminaalien määrää, ei tiedoston kokoa. Käytännössä nämä kaksi
 kuitenkin korreloivat keskimäärin hyvin vahvasti keskenään.
 
-###tila###
+### tila
 Koska parseaminen tapahtuu rekursiivisesti, ja muistissa on kerrallaan vain yksi haara
 juuresta lehteen, toimii parseri oikeastaan logaritmisesti muistivaativuuden suhteen.
 Tästä huolimatta pullonkaulana on token lista (ja viikosta 5 eteenpäin myös
@@ -122,13 +122,13 @@ tokeneiksi muutettuina (ja kommentit poistettuina). Koska token lista on
 kokonaisuudessaan muistissa ja se tuhotaan vasta ohjelman loputtua, tulee muistin
 vaatimukseksi O(n + log(n)) = O(n)
 
-###aika###
+### aika
 Kaikki vaiheet ovat luokassa O(n) sillä joka vaiheessa syöte luetaan vain kertaalleen läpi.
 Tämä on varmasti itsestään selvää skannauksessa sekä semanttisessa analyysissä. Myös parseaminen
 on O(n) sillä siinä ei ole minkäänlaista backtrack järjestelmää, eli se osaa sanoa aina
 seuraavan terminaalin(tokenin) kohdalla voiko syöte mahdollisesti toteuttaa kielen syntaksin.
 
-##muuta##
+## muuta
 Ennenkuin joku ihmettelee miksi puu käydään rekursiivisesti läpi kaksi kertaa:
 Semanttisen analyysin olisi voinut suorittaa samalla rekursiokerralla syntaksin tarkastamisen
 yhteydessä. Tämä olisi kuitenkin epäselkeyttänyt koodia huomattavasti, joten päätin
@@ -138,9 +138,9 @@ silti samana, joten tämä ratkaisu ei merkittävästi hidasta ohjelman suoritus
 
 Koodin generointi on kuitenkin tethty samaan yhteyteen semantiikan tarkistuksen kanssa.
 
-##puutteet ja parannusehdotukset##
+## puutteet ja parannusehdotukset
 
-###literaalialueen puuttuminen###
+### literaalialueen puuttuminen
 Vaikka ttk-15 arkkitehtuuri käsittelee lukuja 32 bittisinä, ei c:kääntäjä kuitenkaan kykene kuin 16 bitin
 tarkkuuteen. Luvut voivat kyllä kasvaa yli 16 bittisiksi, mutta muuttujia ei voi alustaa kuin 16 bitin
 tarkkuudella. Myöskään literaalit jotka vievät yli 16 bittiä eivät ole sallittuja. Tämä johtuu siitä, että
@@ -164,7 +164,7 @@ liian suurista osoitekentän arvoista.
 Tämän ongelman voisi ratkaista tekemällä tarkistukset kaikille literaaleille ja binääriesityksen ollessa
 yli 16 bittiä tallentamalla ko, literaalin erilliseen muistipaikkaan ja viittaamalla lukuun sitä kautta.
 
-###tulostus ja syötteen luku###
+### tulostus ja syötteen luku
 Koska kääntäjän yhteydessä ei ole minkäänlaista standardikirjastoa, ei pelkillä c-kielen ominaisuuksilla
 ole mahdollista lukea syötettä tai tulostaa mitään. Tämän asian korjaamiseksi kieleen on lisätty
 mahdollisuus inline assembly konekäskyille. $-merkillä alkavat rivit tulkitaan siis suoriksi konekäskyiksi
@@ -182,7 +182,7 @@ konekäsky tulee laittaa omalle rivilleen.
 Vastaavasti tulostus tapahtuu load ja out konekäskyillä. ttk-15 konekäskyistä lisätietoa ko. projektin
 dokumentaatiossa github.com/apason/ttk-15
 
-###muuttujien esittely###
+### muuttujien esittely
 Määriteltyyn ohjelmointikieleen jäi pienimuotoinen moka jonka tajusin vasta loppusuoralla, joten se saa
 sinne toistaiseksi myös jäädä. Statement nonterminaali sisältää declaration nonterminaalin saman arvoisena
 kuin muutkin nonterminaalit. Lisäksi if, while ja for rakenteet on määritelty niin, että ne saavat
@@ -193,7 +193,7 @@ Esimerkiksi if(5==4) int muuttuja; luo muuttujan "muuttuja" joka tapauksessa, ja
 viitata vaikkei ehto olekaan tosi. Tämä ei varsinaisesti haittaa mitään, kun sen tietää, mutta "ominaisuus"
 on silti hieman hölmö ja epälooginen.
 
-###kielen yleinen suppeus###
+### kielen yleinen suppeus
 Toteutettu kieli on lähtökotaisesti erittäin suppea. Lähtökohtaisesti laajentaminen olisi aina mukava
 juttu, mutta erityisesti haluaisin mainita seuraavat seikat:
 
@@ -213,7 +213,7 @@ toteuttaa kieleen goto lause. Laskentaa voisi jo monipuolistaa huomattavan paljo
 Myös tyypinmuunnokset int->float ja float->int olisivat erittäin tärkeät. Nämä toteutetaankin todennäköisesti
 tulevaisuudessa jos ttk-15 käskykanta on laajennettu sisältämään käskyt tyypinmuunnoksiin.
 
-##lähteet##
+## lähteet
  * Eniten käytettynä lähteenä Michael L. Scott - Programming Language Pragmatics - Morgan Caufmann (2009)
  * Juha Vihavaisen kalvot kääntäjä kurssilta 2014 (näyttää olevan aika pitkälti referointia ylemmästä lähteestä)
  * Laskennan mallit kurssin pruju Jyrki Kivinen (2011) osa "kontekstittomat kielet"

@@ -1,4 +1,4 @@
-#kielen kuvaus#
+# kielen kuvaus
 
 En ota heti alkuun tavoitteeksi koko ansi c kielen tarkastusta vaan olen päätynyt seuraavaan osajoukkoon:
  * tietotyypit int ja float
@@ -9,7 +9,7 @@ En ota heti alkuun tavoitteeksi koko ansi c kielen tarkastusta vaan olen pääty
  * c:n kommentit. sekä yhden rivin että usean rivin muodossa.
 
 
-##leksikaalinen analyysi##
+## leksikaalinen analyysi
 leksikaalinen analyysi tuottaa seuraavan laisia tokeneita:
  * lBra operaattori (
  * rBra operaattori )
@@ -30,7 +30,7 @@ leksikaalinen analyysi tuottaa seuraavan laisia tokeneita:
  * lCur operaattori {
  * rCur operaattori }
 
-##kieli##
+## kieli
 Kyseessä on selvästi yhteydetön eli kontekstiton kieli. (CFL) Formaalisti CFL on
 nelikko (T, N, S, P), jossa T on terminaalien joukko, N on epäterminaalien joukko, S
 on aloitussymboli ja P on sääntöjoukko, joka määrää mitä mistäkin epäterminaalista
@@ -38,14 +38,14 @@ on johdettavissa.
 
 Oletetaan, että lukija ymmärtää säännöllisten kielten merkintätavat.
 
-###T###
+### T
 Koska parseri ei näe merkkejä vaan pelkkiä tokeneita, on terminaalien joukko sama
 kuin leksikaalisen analyysin tuottamien tokenien joukko
 
-###S###
+###S 
 keilen alkusymboli on program
 
-###N ja P###
+### N ja P
 Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
  * program         = statement_list | EOF
  * statement_list  = statement statement_list | epsilon       
@@ -63,7 +63,7 @@ Kielessä on seuraavat nonterminaalit: (ja niiden säännöt)
  * factor_tail     = mulOp factor factor_tail | epsilon
 
 
-##semantiikka##
+## semantiikka
 
 Kielessä on seuraavat semanttiset ominaisuudet
 

@@ -1,4 +1,4 @@
-#viikkoraportti 4#
+# viikkoraportti 4
 
 Kielen kuvausta päivitettiin vielä hieman (toivottavasti se nyt on lopullisessa muodossaan). Kielen kuvaukseen lisättiin puolipiste, joten nyt lauseet ovat
 oikeaoppisia c:n lauseita. Lisäksi EOF token lisättiin indikoimaan syötteen päättymistä. Lisäksi vertailuoperaattori != lisättiin kieleen koska se oli aiemmin unohtunut.

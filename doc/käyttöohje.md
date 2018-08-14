@@ -1,11 +1,11 @@
-#käyttöohje#
+# käyttöohje
 Koska kääntäjä kääntää projektissa määritellyn ohjelmointikielen lähdekoodit ttk-15 arkkitehtuurille
 ei kääntäjällä oikeastaan voi tehdä mitään ilman kyseisen prosessorin emulaattoria. Toki koodin voi
 kääntää mutta sitä ei pääse suorittamaan.
 
 Binääritiedosto löytyy oletusarvoisesti paikasta target/tira
 
-##muutama sana ttk-15:a##
+## muutama sana ttk-15:a
 ttk-15 on Auvo Häkkisen kehittämän prosessoriarkkitehtuurin ttk-91:n, jota käytetään tietokoneen toiminta
 -kurssilla, innoittamana kehitetty arkkitehtuuri. Se on taaksepäin yhteensopiva ttk-91:n kanssa mutta
 siinä on useita päivityksiä ja uusia ominaisuuksia. ttk-15 on ladattavissa osoitteesta
@@ -14,7 +14,7 @@ sopivan version. Suositeltavaa olisi käyttää version 0.3 valmiiksi käännett
 on dpkg tai rpm pohjainen, voi ladata suoraan .deb tai .rpm tiedostot ja asentaa ne paketinhallinnan kautta).
 Windows versio toimii toistaiseksi vain cygwinin alaisuudessa joten suositeltavaa on käyttää vain linux versioita.
 
-##ohjelman suorittaminen##
+## ohjelman suorittaminen
 Ohjelman suoritus on erittäin helppo toimenpide. Tarvitaan vain yksi lähdetiedosto sekä ohjelma.
 Lähdetiedosto annetaan ohjelmalle parametrinä ja jos koodi on syntaktisesti ja semanttisesti korrekti,
 syntyy tuloksena konekielinen tiedosto "result.k15". Tämä tiedosto on siis ttk-15 arkkitehtuurin tunnistama

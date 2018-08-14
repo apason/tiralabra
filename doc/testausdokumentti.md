@@ -1,6 +1,6 @@
-#testausdokumentti#
+# testausdokumentti
 
-##leksikaalinen analyysi##
+## leksikaalinen analyysi
 Leksikaalisen analyysin eli skannauksen testaaminen toteutettiin luomalla pienehköjä
 testitiedostoja, jotka sisältävät halutun ohjelmakoodin. Ohjelmakoodi ajetaan skannerin
 läpi, jolloin se tuottaa token listin. Tämä lista tulostetaan terminaaliin, jolloin
@@ -51,7 +51,7 @@ Viikolla 4 lisättiin ohjelmaan TOKEN_EOF joka siis ilmoittaa token virran pää
 Jotta testejä ei olisi tarvinnut muuttaa, tämä token lisätään implisiittisesti jokaisen
 testin odotettuun tokenarvoon.
 
-##syntaksianalyysi##
+## syntaksianalyysi
 Syntaksianalyysin eli parserin testaaminen hoidetaan hieman samalla tavalla kuin
 skannaamisenkin testaaminen. Hakemistossa tests/parser on skripti, joka suorittaa
 units/hakemistossa oleville testitiedostoille syntaksitarkastuksen. Kuten skannerin
@@ -67,7 +67,7 @@ Testejä on tehty käytännössä kaikkiin ei mahdollisuuksiin, niin että ne ka
 myös kaikki eri vertailuoperaattorit sekä aritmeettiset operaattorit. Myös tyhjiä
 lauseita on testattu erikseen sekä toisto ja ehtolauseiden kanssa.
 
-##semanttinen analyysi##
+## semanttinen analyysi
 Semanttinen analyysi testataan käytännössä täysin samalla tavalla kuin syntaktinen analyysi.
 Erona näiden kahden välillä on käytännössä ohjelman main funktio. Semantiikan tarkastuksen
 main funktio ajaa vielä parserilta saadun syntaksipuun checkSemantics funktion läpi.
@@ -84,13 +84,13 @@ Testattu on kaikkia rajatapauksia, mm.
 
 Kaikkia edellä mainittuja tapauksia on testattu useammin kuin kerran.
 
-##koodin generointi##
+## koodin generointi
 Koodin generointia eli lopullista ohjelman tulostetta on testattu vain manuaalisesti.
 En tiedä kannattaako tähän tehdä automaattisia testejä, koska se edellyttäisi
 ttk-15 binäärien liittämistä projektiin. Manuaaliset testit ovat kuitenkin kaikki
 tuottaneet odotetun lopputuloksen
 
-##testien ajaminen##
+## testien ajaminen
 
 Kaikki testit voidaan ajaa suoraan testiskriptistä hakemistoissa tests/asd/test.sh
 missä asd on joko "lex", "parser" tai "semantics". Testeille on kuitenkin tehty oma makefile
@@ -102,7 +102,7 @@ suorituskelpoisia. Testit siis suoritetaan projektin juurihakemistossa komennoll
 
 make tests
 
-##muuta testeihin liittyvää##
+## muuta testeihin liittyvää
 
 Testit käyttävät tällä hetkellä testitiedoston nimen parseamiseen grep komentoa.
 Tämän takia testitiedostojen nimet eivät voi olla toistensa osamerkkijonoja!

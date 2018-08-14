@@ -1,5 +1,5 @@
 
-#viikkoraportti 5#
+# viikkoraportti 5
 
 Tällä viikolla toteutin parseriin syntaksipuun generoinnin. Nyt ohjelma generoi puuta syntaksitarkistuksen yhteydessä. Lisäksi toteutin semanttisen tarkistuksen.
 Siihen kuuluu tarkistus, että määrittelemättömiä muuttujia ei voi käyttää. Lisäksi muuttujia määriteltäesstä tarkistetaan että sen nimistä muuttujaa

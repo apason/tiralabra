@@ -1,4 +1,4 @@
-#viikkoraportti 6#
+# viikkoraportti 6
 
 Tällä viikolla refaktoroin koodia melko paljon ja kommentoin sen niin hyvin kuin pystyin.
 Nyt koodin pitäisi olla melko selkeää jopa ilman kommentteja. Hakemistorakenteen muuttaminen

@@ -1,6 +1,6 @@
-#viikkoraportti 3#
+# viikkoraportti 3
 
-##kielen kuvauksen määritelmä##
+## kielen kuvauksen määritelmä
 Koska kielen halutaan olevan LL(1) yhteensopiva, tulee sen kuvausta hieman muuttaa.
 Seuraavat muutokset suoritettiin kielen kuvaukseen:
  * Lisätty token tyypit addOp ja mulOp. Näiden avulla lausekkeiden laskeminen oikeassa
