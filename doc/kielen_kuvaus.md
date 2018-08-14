@@ -42,7 +42,7 @@ Oletetaan, että lukija ymmärtää säännöllisten kielten merkintätavat.
 Koska parseri ei näe merkkejä vaan pelkkiä tokeneita, on terminaalien joukko sama
 kuin leksikaalisen analyysin tuottamien tokenien joukko
 
-###S 
+### S 
 keilen alkusymboli on program
 
 ### N ja P
